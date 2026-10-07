@@ -3117,9 +3117,6 @@ class Component extends DCLogic {
       const raw = localStorage.getItem('meubolso-v1');
       if (!raw) return null;
       const d = JSON.parse(raw);
-      const MAP = { '#0a2e24': '#1e1b4b', '#1f9d72': '#4a45e0', '#16815d': '#7c3aed', '#16a34a': '#0ea5e9', '#0d9488': '#0284c7', '#eef7f3': '#eef1ff' };
-      const fix = list => (list || []).map(o => (o && MAP[o.color]) ? Object.assign({}, o, { color: MAP[o.color] }) : o);
-      d.accounts = fix(d.accounts); d.cards = fix(d.cards); d.categories = fix(d.categories);
       return {
         accounts: d.accounts || [], cards: d.cards || [], categories: d.categories || [],
         transactions: d.transactions || [], payments: d.payments || [], budgets: d.budgets || {}, subs: d.subs || []
@@ -3304,7 +3301,6 @@ class Component extends DCLogic {
     });
     return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
   }
-  isLight(hex) { return this.luminance(hex) > 0.35; }
   contrast(l1, l2) { const a = Math.max(l1, l2), b = Math.min(l1, l2); return (a + 0.05) / (b + 0.05); }
   /* tinta com maior contraste sobre o fundo e alpha mínimo que atinja a razão pedida */
   cardInk(bg) {
@@ -3653,10 +3649,6 @@ class Component extends DCLogic {
         : s.cards.concat([{ id: id, name: f.name, limit: f.amount, closingDay: Number(f.closingDay), dueDay: Number(f.dueDay), color: f.color }]),
       selectedCardId: id, modal: null, form: {}
     }));
-  }
-  delCard(id) {
-    if (!confirm('Excluir este cartão e suas despesas?')) return;
-    this.up(s => ({ cards: s.cards.filter(c => c.id !== id), transactions: s.transactions.filter(t => t.cardId !== id), payments: s.payments.filter(p => p.cardId !== id), selectedCardId: null }));
   }
   saveCategory() {
     const f = this.state.form;
@@ -4073,7 +4065,6 @@ class Component extends DCLogic {
     const totalBalance = s.accounts.reduce((a, acc) => a + this.accountBalanceBRL(acc.id), 0);
 
     const openInv = s.cards.reduce((a, c) => a + Math.max(0, this.invoiceRemaining(c.id, s.refMonth, true)), 0);
-    const openCount = s.cards.filter(c => this.invoiceRemaining(c.id, s.refMonth) > 0).length;
 
     const txView = t => {
       if (t.type === 'transfer') {
@@ -4195,14 +4186,6 @@ class Component extends DCLogic {
       '#1d4ed8', '#0ea5e9', '#0891b2', '#0d9488', '#16a34a', '#65a30d',
       '#ca8a04', '#f59e0b', '#ea580c', '#dc2626', '#e11d48', '#db2777',
       '#9d174d', '#7c2d12', '#166534', '#1e3a8a', '#3f3f46', '#78350f'
-    ];
-    const ICONS = [
-      { icon: 'fa-building-columns', color: '#2563eb' }, { icon: 'fa-money-bill-wave', color: '#0891b2' },
-      { icon: 'fa-house', color: '#7c3aed' }, { icon: 'fa-utensils', color: '#ea580c' },
-      { icon: 'fa-car', color: '#0891b2' }, { icon: 'fa-futbol', color: '#0ea5e9' },
-      { icon: 'fa-screwdriver-wrench', color: '#b45309' }, { icon: 'fa-building', color: '#475569' },
-      { icon: 'fa-heart-pulse', color: '#e11d48' }, { icon: 'fa-graduation-cap', color: '#2563eb' },
-      { icon: 'fa-sack-dollar', color: '#7c3aed' }, { icon: 'fa-plane', color: '#0ea5e9' }
     ];
     const CARD_COLORS = [
       '#111827', '#1f2937', '#3f3f46', '#52525b', '#6b7280', '#94a3b8',
@@ -4326,13 +4309,10 @@ class Component extends DCLogic {
       exportInvoicePDF: () => this.exportInvoicePDF(),
 
       totalBalance: this.money(totalBalance),
-      accountsCountLabel: s.accounts.length + (s.accounts.length === 1 ? ' conta cadastrada' : ' contas cadastradas'),
       openInvoices: this.money(openInv),
       openInvoicesAll: this.money(openInv),
-      openInvoicesLabel: openCount ? openCount + (openCount === 1 ? ' fatura em aberto' : ' faturas em aberto') : 'Nenhuma fatura em aberto',
       monthIncome: this.money(shownIn), monthExpense: this.money(shownOut),
       monthNet: this.money(shownIn - shownOut), netClass: shownIn - shownOut >= 0 ? 'text-brand-600' : 'text-rose-600',
-      viewModeLabel: cashView ? 'caixa' : 'competência',
       setViewAccrual: () => this.setState({ balanceView: 'accrual' }),
       setViewCash: () => this.setState({ balanceView: 'cash' }),
       accrualBtnClass: !cashView ? 'h-9 rounded-lg text-[12px] font-bold bg-white shadow-sm text-ink' : 'h-9 rounded-lg text-[12px] font-semibold text-slate-500',
@@ -4389,7 +4369,6 @@ class Component extends DCLogic {
       flowMinFmt: this.money(flowMin ? flowMin.balance : 0),
       flowMinClass: flowMin && flowMin.balance < 0 ? 'text-rose-600' : flowMin && flowMin.balance < 300 ? 'text-orange-600' : 'text-ink',
       flowMinDayLabel: flowMin && flowMin.day ? 'dia ' + flowMin.day + ' de ' + this.monthName(s.refMonth, true).toLowerCase().split(' de ')[0] : '—',
-      flowInvoiceNote: openInv > 0 ? 'Já descontando ' + this.money(openInv) + ' de faturas' : 'Sem faturas a descontar',
 
       accountsView: s.accounts.map(a => {
         const bal = this.accountBalance(a.id);
@@ -4453,20 +4432,15 @@ class Component extends DCLogic {
       setPlanCash: () => this.setState({ planView: 'cash' }),
       planAccrualClass: !planCash ? 'h-9 rounded-lg text-[12px] font-bold bg-white shadow-sm text-ink' : 'h-9 rounded-lg text-[12px] font-semibold text-slate-500',
       planCashClass: planCash ? 'h-9 rounded-lg text-[12px] font-bold bg-white shadow-sm text-ink' : 'h-9 rounded-lg text-[12px] font-semibold text-slate-500',
-      planViewNote: planCash
-        ? 'Caixa: cada parcela do cartão conta no mês da sua fatura. Avance os meses para ver quanto de cada categoria já está comprometido.'
-        : 'Competência: a compra conta inteira no mês em que foi feita, mesmo parcelada.',
       budgetBaseText: this.fmt(base),
       onBudgetBase: e => { const d = (e.target.value || '').replace(/\D/g, ''); this.setBudget('__base', Number(d) / 100); },
       useBudgetIncome: () => { this.setBudget('__base', income); this.toast('Base = receitas do mês.'); },
-      budgetModeValue: !pctMode, budgetModePct: pctMode,
       setBudgetModeValue: () => this.setState({ budgetMode: 'value' }),
       setBudgetModePct: () => this.setState({ budgetMode: 'pct' }),
       budgetModeValueClass: !pctMode ? segOn : segOff,
       budgetModePctClass: pctMode ? segOn : segOff,
       budgetShareLabel: base > 0 ? Math.round((budgetTotal / base) * 100) + '% da base' : 'defina a base para usar %',
       budgetBaseNote: baseRef.from && baseRef.from !== s.refMonth && base > 0 ? 'base herdada de ' + this.monthName(baseRef.from, false) : '',
-      budgetCarryNote: 'Os limites valem deste mês em diante e não mexem nos meses passados. Em %, o limite fica preso à base: mudou a base, o valor acompanha.',
       budgetTotalFmt: this.money(budgetTotal), budgetSpentFmt: this.money(budgetSpent),
       budgetLeftFmt: this.money(budgetTotal - budgetSpent),
       budgetLeftClass: budgetTotal - budgetSpent < 0 ? 'text-rose-600' : 'text-brand-600',
@@ -4522,7 +4496,6 @@ class Component extends DCLogic {
       onSubStart: e => this.setForm(f.id ? { applyFrom: e.target.value } : { start: e.target.value }),
       saveSub: () => this.saveSub(),
 
-      detailTitle: detail.title,
       hasDetailBudget: s.modal === 'detail' && !!(f.plan && f.plan.limit > 0),
       detailBudgetLimit: f.plan ? this.money(f.plan.limit) : '',
       detailBudgetSpent: f.plan ? this.money(f.plan.spent) : '',
@@ -4565,7 +4538,6 @@ class Component extends DCLogic {
         : 'Sem data: o saldo inicial vale desde sempre e todos os lançamentos contam.',
       accountIsForeign: s.modal === 'account' && (f.currency || 'BRL') !== 'BRL',
       rateFieldLabel: 'Cotação (opcional)',
-      calcMode: !!f.calc,
       calcHint: f.calc ? 'Digite a conta e toque em = (ex.: 10 + 2)' : 'Toque em + − × ÷ para usar a calculadora',
       calcOps: ['+', '-', '×', '÷'].map(op => ({
         label: op,
@@ -4652,7 +4624,6 @@ class Component extends DCLogic {
       formUsesCard: s.modal === 'tx' && f.pay === 'card' && f.type === 'expense',
       formCats: s.categories.filter(c => c.type === (f.type || 'expense')),
       accountOptions: s.accounts.filter(a => s.modal !== 'pay' || (a.currency || 'BRL') === 'BRL').map(a => ({ id: a.id, name: a.name + ((a.currency || 'BRL') !== 'BRL' ? ' · ' + a.currency : '') })), cardOptions: s.cards.filter(c => !c.inactive || c.id === f.cardId),
-      cardInactive: !!f.inactive,
       toggleCardInactive: () => this.setForm({ inactive: !f.inactive }),
       cardActiveLabel: f.inactive ? 'Cartão desativado' : 'Cartão ativo',
       cardActiveHint: f.inactive ? 'Não aparece nos lançamentos. Histórico e faturas continuam aqui.' : 'Disponível para novos lançamentos.',
