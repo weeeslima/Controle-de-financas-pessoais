@@ -1975,6 +1975,14 @@
   #tw-splash span { font-size:12px; letter-spacing:.16em; text-transform:uppercase; opacity:.6 }
   @keyframes twspin { to { transform:rotate(360deg) } }
   html[data-tw="ready"] #tw-splash { display:none }
+  @media print {
+    @page { size:A4; margin:12mm }
+    html.inv-printing body * { visibility:hidden !important }
+    html.inv-printing #inv-print, html.inv-printing #inv-print * { visibility:visible !important }
+    html.inv-printing #inv-print { position:absolute !important; inset:0 auto auto 0 !important; width:100% !important; height:auto !important; overflow:visible !important; background:#fff !important }
+    html.inv-printing #inv-print .no-print { display:none !important }
+    html.inv-printing #tw-splash { display:none !important }
+  }
 </style>
 </helmet>
 
@@ -2275,6 +2283,27 @@
               </div>
             </div>
             <sc-if value="{{ hasInvoiceItems }}" hint-placeholder-val="{{ true }}">
+              <div class="px-4 sm:px-5 py-4 border-b border-black/5 bg-slate-50/60">
+                <div class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold mb-3">Resumo por categoria</div>
+                <div class="flex flex-col gap-2.5">
+                  <sc-for list="{{ invoiceCats }}" as="ic" hint-placeholder-count="3">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-lg grid place-items-center shrink-0" style="background:{{ ic.tint }}"><i class="fa-solid {{ ic.icon }} text-[12px]" style="color:{{ ic.color }}"></i></div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline gap-2">
+                          <span class="text-[13px] font-semibold truncate">{{ ic.name }}</span>
+                          <span class="text-[11px] text-slate-400 num shrink-0">{{ ic.countLabel }}</span>
+                          <span class="ml-auto text-[13px] font-bold num shrink-0">{{ ic.totalFmt }}</span>
+                        </div>
+                        <div class="mt-1 flex items-center gap-2">
+                          <div class="flex-1 h-1.5 rounded-full bg-black/5 overflow-hidden"><div class="h-full rounded-full" style="width:{{ ic.pct }};background:{{ ic.color }}"></div></div>
+                          <span class="text-[10.5px] text-slate-400 num w-9 text-right shrink-0">{{ ic.pctLabel }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
               <ul class="divide-y divide-black/5">
                 <sc-for list="{{ invoiceItems }}" as="t" hint-placeholder-count="3">
                   <li class="px-4 sm:px-5 py-3 flex flex-wrap items-center gap-3">
@@ -3036,6 +3065,38 @@
   <template id="__bundler_thumbnail">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="48" fill="#1e1b4b"></rect><g transform="translate(72,72)"><circle cx="48" cy="48" r="48" fill="#4a45e0"></circle><path d="M48 12a36 36 0 0 1 36 36h-36z" fill="#a5b4fc"></path></g><text x="120" y="212" font-family="Helvetica,Arial,sans-serif" font-size="30" font-weight="bold" fill="#ffffff" text-anchor="middle">R$</text></svg>
   </template>
+
+  <sc-if value="{{ hasInvPdf }}" hint-placeholder-val="{{ false }}">
+    <div id="inv-print" class="fixed inset-0 z-[80] bg-white overflow-y-auto" style="-webkit-overflow-scrolling:touch">
+      <div class="no-print sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-black/5 px-4 pb-3 flex items-center gap-2" style="padding-top:max(12px, env(safe-area-inset-top))">
+        <button onClick="{{ closeInvPdf }}" class="h-11 px-4 rounded-xl bg-slate-100 text-[13px] font-semibold text-slate-700 flex items-center gap-2"><i class="fa-solid fa-xmark"></i>Fechar</button>
+        <button onClick="{{ printInvPdf }}" class="ml-auto h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i>Salvar PDF</button>
+      </div>
+      <div class="max-w-[820px] mx-auto px-4 sm:px-6 py-6 text-ink" style="font-family:-apple-system,Helvetica,Arial,sans-serif">
+        <h1 class="text-[18px] font-bold">{{ invPdf.title }}</h1>
+        <p class="mt-0.5 text-[11.5px] text-slate-500">{{ invPdf.sub }}</p>
+        <div class="mt-5 text-[10px] uppercase tracking-[0.12em] text-slate-500 font-semibold">Resumo por categoria</div>
+        <table class="mt-2 w-full border-collapse text-[11.5px]">
+          <thead><tr class="bg-slate-100 text-slate-500 text-[9.5px] uppercase tracking-[0.06em]"><th class="text-left px-2 py-1.5">Categoria</th><th class="text-center px-2 py-1.5">Qtd.</th><th class="text-right px-2 py-1.5">%</th><th class="text-right px-2 py-1.5">Valor</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ invPdf.cats }}" as="pc" hint-placeholder-count="3">
+              <tr class="border-b border-slate-200"><td class="px-2 py-1.5">{{ pc.name }}</td><td class="text-center px-2 py-1.5 num">{{ pc.count }}</td><td class="text-right px-2 py-1.5 num">{{ pc.pctLabel }}</td><td class="text-right px-2 py-1.5 num">{{ pc.totalFmt }}</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <div class="mt-6 text-[10px] uppercase tracking-[0.12em] text-slate-500 font-semibold">Lançamentos</div>
+        <table class="mt-2 w-full border-collapse text-[11.5px]">
+          <thead><tr class="bg-slate-100 text-slate-500 text-[9.5px] uppercase tracking-[0.06em]"><th class="text-left px-2 py-1.5">Data</th><th class="text-left px-2 py-1.5">Descrição</th><th class="text-left px-2 py-1.5">Categoria</th><th class="text-center px-2 py-1.5">Parc.</th><th class="text-right px-2 py-1.5">Valor</th><th class="text-center px-2 py-1.5">OK</th></tr></thead>
+          <tbody>
+            <sc-for list="{{ invPdf.rows }}" as="pr" hint-placeholder-count="5">
+              <tr class="border-b border-slate-200"><td class="px-2 py-1.5 num whitespace-nowrap">{{ pr.date }}</td><td class="px-2 py-1.5">{{ pr.desc }}</td><td class="px-2 py-1.5">{{ pr.cat }}</td><td class="text-center px-2 py-1.5 num">{{ pr.inst }}</td><td class="text-right px-2 py-1.5 num whitespace-nowrap">{{ pr.amountFmt }}</td><td class="text-center px-2 py-1.5"><span class="inline-block w-3 h-3 border border-slate-400 rounded-[3px]"></span></td></tr>
+            </sc-for>
+          </tbody>
+          <tfoot><tr class="font-bold text-[12.5px]" style="border-top:2px solid #13131f"><td colspan="4" class="px-2 py-2">Total da fatura</td><td class="text-right px-2 py-2 num whitespace-nowrap">{{ invPdf.totalFmt }}</td><td></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </sc-if>
 
   <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
     <div class="fixed z-[60] left-1/2 -translate-x-1/2 bottom-[150px] md:bottom-10 px-4 py-2.5 rounded-xl bg-ink text-white text-[12.5px] font-semibold shadow-lg">{{ toast }}</div>
@@ -3859,6 +3920,23 @@ class Component extends DCLogic {
       }));
     return { card: card, rows: rows, total: rows.reduce((a, r) => a + r.amount, 0) };
   }
+  invoiceCatSummary(txs) {
+    const total = txs.reduce((a, t) => a + t.amount, 0);
+    const map = {};
+    txs.forEach(t => { const k = t.categoryId || '_'; (map[k] = map[k] || { id: k, total: 0, count: 0 }); map[k].total += t.amount; map[k].count++; });
+    const list = Object.values(map).sort((a, b) => b.total - a.total);
+    const max = list.length ? list[0].total : 0;
+    return list.map(g => {
+      const c = this.cat(g.id);
+      const share = total > 0 ? (g.total / total) * 100 : 0;
+      return {
+        name: c.name, icon: c.icon, color: c.color, tint: this.tint(c.color), count: g.count,
+        countLabel: g.count + (g.count === 1 ? ' item' : ' itens'),
+        totalFmt: this.money(g.total), pct: (max > 0 ? (g.total / max) * 100 : 0).toFixed(0) + '%',
+        pctLabel: share.toFixed(0) + '%'
+      };
+    });
+  }
   exportInvoiceCSV() {
     const inv = this.invoiceRows();
     if (!inv.card || !inv.rows.length) return this.toast('Fatura sem lançamentos.');
@@ -3875,33 +3953,25 @@ class Component extends DCLogic {
   exportInvoicePDF() {
     const inv = this.invoiceRows();
     if (!inv.card || !inv.rows.length) return this.toast('Fatura sem lançamentos.');
-    const ym = this.state.refMonth;
-    const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
-    const body = inv.rows.map(r => '<tr><td>' + esc(r.date) + '</td><td>' + esc(r.desc) + '</td><td>' + esc(r.cat) + '</td><td class="c">' + esc(r.inst) + '</td><td class="r">' + this.fmt(r.amount) + '</td><td class="c box"></td></tr>').join('');
-    const css = '@page{size:A4;margin:14mm}body{font:12px/1.45 -apple-system,Helvetica,Arial,sans-serif;color:#13131f;margin:0}'
-      + 'h1{font-size:17px;margin:0 0 2px}p.sub{margin:0 0 16px;color:#666;font-size:11.5px}'
-      + 'table{width:100%;border-collapse:collapse}th,td{padding:7px 8px;border-bottom:1px solid #e3e3ea;text-align:left;font-size:11.5px}'
-      + 'th{background:#f2f2f7;text-transform:uppercase;letter-spacing:.06em;font-size:9.5px;color:#555}'
-      + '.r{text-align:right;font-variant-numeric:tabular-nums}.c{text-align:center}.box{width:34px}'
-      + '.box:after{content:"";display:inline-block;width:12px;height:12px;border:1px solid #9a9aa8;border-radius:3px}'
-      + 'tfoot td{font-weight:700;border-top:2px solid #13131f;border-bottom:none;font-size:12.5px}';
-    const openTag = '<scr' + 'ipt>', closeTag = '</scr' + 'ipt>';
-    const html = '<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Fatura ' + esc(inv.card.name) + ' ' + ym + '</title>'
-      + '<style>' + css + '</style></head><body>'
-      + '<h1>' + esc(inv.card.name) + ' — fatura de ' + this.monthName(ym, true) + '</h1>'
-      + '<p class="sub">Fecha dia ' + inv.card.closingDay + ' · vence dia ' + inv.card.dueDay + ' · ' + inv.rows.length + (inv.rows.length === 1 ? ' lançamento' : ' lançamentos') + ' · gerado em ' + this.dateFull(this.todayStr()) + '</p>'
-      + '<table><thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th class="c">Parc.</th><th class="r">Valor</th><th class="c">OK</th></tr></thead>'
-      + '<tbody>' + body + '</tbody><tfoot><tr><td colspan="4">Total da fatura</td><td class="r">' + this.fmt(inv.total) + '</td><td></td></tr></tfoot></table>'
-      + openTag + 'window.onload=function(){setTimeout(function(){window.print()},300)}' + closeTag + '</body></html>';
-    const w = window.open('', '_blank');
-    if (w && w.document) { w.document.write(html); w.document.close(); return this.toast('Use Compartilhar › Salvar em PDF.'); }
-    const f = document.createElement('iframe');
-    f.style.cssText = 'position:fixed;right:0;bottom:0;width:1px;height:1px;border:0;opacity:0';
-    f.srcdoc = html;
-    document.body.appendChild(f);
-    setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (err) {} }, 700);
-    this.toast('Abrindo impressão — escolha "Salvar em PDF".');
+    const s = this.state, ym = s.refMonth;
+    const txs = s.transactions.filter(t => t.pay === 'card' && t.cardId === inv.card.id && t.invoiceMonth === ym && this.isPostedTx(t));
+    this.setState({ invPdf: {
+      title: inv.card.name + ' — fatura de ' + this.monthName(ym, true),
+      sub: 'Fecha dia ' + inv.card.closingDay + ' · vence dia ' + inv.card.dueDay + ' · ' + inv.rows.length + (inv.rows.length === 1 ? ' lançamento' : ' lançamentos') + ' · gerado em ' + this.dateFull(this.todayStr()),
+      cats: this.invoiceCatSummary(txs),
+      rows: inv.rows.map(r => Object.assign({}, r, { amountFmt: this.fmt(r.amount) })),
+      totalFmt: this.fmt(inv.total), docTitle: 'Fatura ' + inv.card.name + ' ' + ym
+    } });
   }
+  printInvPdf() {
+    const root = document.documentElement, prev = document.title;
+    root.classList.add('inv-printing');
+    if (this.state.invPdf) document.title = this.state.invPdf.docTitle;
+    const done = () => { root.classList.remove('inv-printing'); document.title = prev; window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    setTimeout(() => window.print(), 60);
+  }
+
 
   /* ---------- charts ---------- */
   reorderCard(dragId, overId) {
@@ -4307,6 +4377,11 @@ class Component extends DCLogic {
       onBackupFile: e => this.importBackup(e),
       exportInvoiceCSV: () => this.exportInvoiceCSV(),
       exportInvoicePDF: () => this.exportInvoicePDF(),
+      hasInvPdf: !!s.invPdf,
+      invPdf: s.invPdf || { title: '', sub: '', cats: [], rows: [], totalFmt: '' },
+      closeInvPdf: () => { document.documentElement.classList.remove('inv-printing'); this.setState({ invPdf: null }); },
+      printInvPdf: () => this.printInvPdf(),
+      invoiceCats: sel ? this.invoiceCatSummary(s.transactions.filter(t => t.pay === 'card' && t.cardId === sel.id && t.invoiceMonth === s.refMonth && this.isPostedTx(t))) : [],
 
       totalBalance: this.money(totalBalance),
       openInvoices: this.money(openInv),
