@@ -2054,8 +2054,8 @@
               <button onClick="{{ setViewCash }}" class="{{ cashBtnClass }}">Caixa</button>
             </div>
             <div class="mt-3 flex flex-col gap-1.5">
-              <span class="text-[20px] leading-none font-extrabold num text-brand-600">+ {{ monthIncome }}</span>
-              <span class="text-[20px] leading-none font-extrabold num text-rose-600">- {{ monthExpense }}</span>
+              <span class="text-[20px] leading-none font-extrabold num {{ monthIncomeClass }}">{{ monthIncomeFmt }}</span>
+              <span class="text-[20px] leading-none font-extrabold num {{ monthExpenseClass }}">{{ monthExpenseFmt }}</span>
             </div>
             <div class="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden flex">
               <div class="h-full bg-brand-500" style="width:{{ balanceBarIncome }}"></div>
@@ -2121,7 +2121,7 @@
                       <div class="flex items-center gap-2 text-[12.5px]">
                         <i class="fa-solid {{ c.icon }} text-[11px]" style="color:{{ c.color }}"></i>
                         <span class="font-semibold truncate">{{ c.name }}</span>
-                        <span class="ml-auto num font-bold">{{ c.totalFmt }}</span>
+                        <span class="ml-auto num font-bold {{ c.totalClass }}">{{ c.totalFmt }}</span>
                         <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
                       </div>
                       <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
@@ -2293,7 +2293,7 @@
                         <div class="flex items-baseline gap-2">
                           <span class="text-[13px] font-semibold truncate">{{ ic.name }}</span>
                           <span class="text-[11px] text-slate-400 num shrink-0">{{ ic.countLabel }}</span>
-                          <span class="ml-auto text-[13px] font-bold num shrink-0">{{ ic.totalFmt }}</span>
+                          <span class="ml-auto text-[13px] font-bold num shrink-0 {{ ic.totalClass }}">{{ ic.totalFmt }}</span>
                         </div>
                         <div class="mt-1 flex items-center gap-2">
                           <div class="flex-1 h-1.5 rounded-full bg-black/5 overflow-hidden"><div class="h-full rounded-full" style="width:{{ ic.pct }};background:{{ ic.color }}"></div></div>
@@ -2311,10 +2311,10 @@
                       <div class="w-10 h-10 rounded-xl grid place-items-center shrink-0" style="background:{{ t.tint }}"><i class="fa-solid {{ t.icon }} text-[14px]" style="color:{{ t.color }}"></i></div>
                       <div class="min-w-0 flex-1">
                         <div class="flex items-baseline gap-3">
-                          <span class="text-[14px] font-semibold min-w-0 flex-1 truncate">{{ t.desc }} <span class="text-[11px] font-bold text-brand-600">{{ t.installmentLabel }}</span></span>
-                          <span class="text-[14px] font-bold num shrink-0">{{ t.amountFmt }}</span>
+                          <span class="text-[14px] font-semibold min-w-0 flex-1 truncate {{ t.invTextClass }}"><sc-if value="{{ t.isRefund }}" hint-placeholder-val="{{ false }}"><span class="mr-1.5 align-middle inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-wider"><i class="fa-solid fa-rotate-left text-[9px]"></i>Estorno</span></sc-if>{{ t.desc }} <span class="text-[11px] font-bold {{ t.invInstClass }}">{{ t.installmentLabel }}</span></span>
+                          <span class="text-[14px] font-bold num shrink-0 {{ t.invTextClass }}">{{ t.invAmountFmt }}</span>
                         </div>
-                        <div class="text-[11.5px] text-slate-400 truncate">{{ t.meta }}</div>
+                        <div class="text-[11.5px] truncate {{ t.invMetaClass }}">{{ t.invMeta }}</div>
                       </div>
                     </button>
                     <div class="flex items-center gap-1.5 w-full sm:w-auto">
@@ -2331,7 +2331,7 @@
               </ul>
               <div class="px-5 py-3 bg-slate-50 flex items-center justify-between text-[12.5px] font-bold">
                 <span class="text-slate-500 uppercase tracking-[0.12em] text-[11px]">Total da fatura</span>
-                <span class="num text-[15px]">{{ selCard.invoiceTotalFmt }}</span>
+                <span class="num text-[15px] {{ selCard.invoiceTotalClass }}">{{ selCard.invoiceTotalFmt }}</span>
               </div>
             </sc-if>
             <sc-if value="{{ noInvoiceItems }}" hint-placeholder-val="{{ false }}">
@@ -2494,7 +2494,7 @@
               <span class="text-[13.5px] font-bold pt-0.5">{{ r.label }}</span>
               <div class="flex flex-col items-end text-[13.5px] num leading-relaxed">
                 <span class="text-brand-600">+ {{ r.incomeFmt }}</span>
-                <span class="text-rose-600">- {{ r.expenseFmt }}</span>
+                <span class="{{ r.expenseClass }}">{{ r.expenseSignFmt }}</span>
                 <span class="mt-0.5 pt-0.5 border-t border-slate-200 font-bold min-w-full text-right {{ r.netClass }}">= {{ r.netFmt }}</span>
               </div>
             </div>
@@ -2510,7 +2510,7 @@
                 <tr>
                   <td class="px-5 py-3 font-semibold">{{ r.label }}</td>
                   <td class="px-5 py-3 text-right num text-brand-600">{{ r.incomeFmt }}</td>
-                  <td class="px-5 py-3 text-right num text-rose-600">{{ r.expenseFmt }}</td>
+                  <td class="px-5 py-3 text-right num {{ r.expenseClass }}">{{ r.expenseSignFmt }}</td>
                   <td class="px-5 py-3 text-right num font-bold {{ r.netClass }}">{{ r.netFmt }}</td>
                 </tr>
               </sc-for>
@@ -2618,13 +2618,13 @@
             </div>
             <div>
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Valor</span>
-              <input onInput="{{ onAmount }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold {{ amountColorClass }}" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold {{ amountColorClass }}" />
               <div class="mt-2 flex items-center gap-1.5">
                 <sc-for list="{{ calcOps }}" as="op" hint-placeholder-count="4">
-                  <button onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
+                  <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
                 </sc-for>
                 <button onClick="{{ calcEq }}" class="w-11 h-10 rounded-xl bg-brand-600 text-white text-[16px] font-bold">=</button>
-                <button onClick="{{ calcClear }}" class="ml-auto h-10 px-3 rounded-xl bg-slate-100 text-[12px] font-semibold text-slate-500">Limpar</button>
+                <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ calcClear }}" class="ml-auto h-10 px-3 rounded-xl bg-slate-100 text-[12px] font-semibold text-slate-500">Limpar</button>
               </div>
               <p class="mt-1.5 text-[11px] text-slate-400">{{ calcHint }}</p>
               <sc-if value="{{ hasFxHint }}" hint-placeholder-val="{{ false }}">
@@ -2681,7 +2681,7 @@
                 <sc-if value="{{ transferNeedsConversion }}" hint-placeholder-val="{{ false }}">
                   <div class="rounded-2xl bg-brand-50 p-3.5 flex flex-col gap-2">
                     <span class="text-[11px] uppercase tracking-[0.12em] text-brand-700 font-semibold">Valor recebido em {{ toCurLabel }}</span>
-                    <input onInput="{{ onToAmount }}" value="{{ toAmountDisplay }}" inputmode="numeric" autocomplete="off" placeholder="{{ toAmountPlaceholder }}" class="w-full h-12 rounded-xl border-brand-100 bg-white text-[20px] font-extrabold num text-right placeholder:text-slate-300" />
+                    <input onInput="{{ onToAmount }}" onBlur="{{ onToAmountBlur }}" value="{{ toAmountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ toAmountPlaceholder }}" class="w-full h-12 rounded-xl border-brand-100 bg-white text-[20px] font-extrabold num text-right placeholder:text-slate-300" />
                     <p class="text-[11.5px] text-brand-700 num">{{ convRateLabel }}</p>
                   </div>
                 </sc-if>
@@ -2777,7 +2777,7 @@
             </sc-if>
             <label class="block">
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Saldo inicial</span>
-              <input onInput="{{ onAmount }}" value="{{ amountDisplay }}" inputmode="numeric" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
             </label>
             <div>
               <div class="flex items-center justify-between gap-3">
@@ -2817,7 +2817,7 @@
             </label>
             <label class="block">
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Limite</span>
-              <input onInput="{{ onAmount }}" value="{{ form.amountText }}" inputmode="numeric" placeholder="R$ 0,00" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="0,00" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
             </label>
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
@@ -2890,13 +2890,13 @@
             </label>
             <div>
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Valor mensal</span>
-              <input onInput="{{ onAmount }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold text-rose-600" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold text-rose-600" />
               <div class="mt-2 flex items-center gap-1.5">
                 <sc-for list="{{ calcOps }}" as="op" hint-placeholder-count="4">
-                  <button onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
+                  <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
                 </sc-for>
                 <button onClick="{{ calcEq }}" class="w-11 h-10 rounded-xl bg-brand-600 text-white text-[16px] font-bold">=</button>
-                <button onClick="{{ calcClear }}" class="ml-auto h-10 px-3 rounded-xl bg-slate-100 text-[12px] font-semibold text-slate-500">Limpar</button>
+                <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ calcClear }}" class="ml-auto h-10 px-3 rounded-xl bg-slate-100 text-[12px] font-semibold text-slate-500">Limpar</button>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -3040,7 +3040,7 @@
             </div>
             <label class="block">
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Valor pago</span>
-              <input onInput="{{ onAmount }}" value="{{ form.amountText }}" inputmode="numeric" placeholder="R$ 0,00" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="0,00" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
             </label>
             <label class="block">
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Debitar da conta</span>
@@ -3315,8 +3315,31 @@ class Component extends DCLogic {
 
   /* ---------- helpers ---------- */
   uid() { return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3); }
+  // devolve o foco ao campo de valor (mesmo bloco do botão da calculadora) para o teclado não fechar
+  refocusAmount(e) {
+    try {
+      let el = e && e.currentTarget;
+      while (el && el.parentElement) {
+        el = el.parentElement;
+        const inp = el.querySelector && el.querySelector('input[inputmode="decimal"]');
+        if (inp) { inp.focus({ preventScroll: true }); const n = (inp.value || '').length; try { inp.setSelectionRange(n, n); } catch (x) {} return; }
+      }
+    } catch (x) {}
+  }
+  // número no padrão brasileiro, sem símbolo de moeda (campo de valor)
+  fmtNum(v) { return (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  // "1.234,56" / "12,5" / "-50" / "12.5" -> número; vazio -> null
+  parseNum(txt) {
+    let t = String(txt || '').replace(/\s/g, '');
+    if (!t || t === '-') return null;
+    if (t.indexOf(',') >= 0) t = t.replace(/\./g, '').replace(',', '.');
+    const v = Number(t);
+    return isFinite(v) ? Math.round(v * 100) / 100 : null;
+  }
   fmt(v) { return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   money(v) { return this.state.privacy ? 'R$ ••••' : this.fmt(v); }
+  // negativo com sinal separado ("- R$ 50,00"), nunca "-R$" colado
+  moneyS(v) { const n = Number(v) || 0; return n < -0.004 ? '- ' + this.money(-n) : this.money(Math.abs(n) < 0.005 ? 0 : n); }
   fmtC(v, cur) {
     cur = cur || 'BRL';
     try { return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: cur }); }
@@ -3578,7 +3601,7 @@ class Component extends DCLogic {
     this.setState({
       modal: 'card',
       form: card
-        ? { id: card.id, name: card.name, amount: card.limit, amountText: card.limit ? this.fmt(card.limit) : '', closingDay: card.closingDay, dueDay: card.dueDay, color: card.color, inactive: !!card.inactive }
+        ? { id: card.id, name: card.name, amount: card.limit, amountText: card.limit ? this.fmtNum(card.limit) : '', closingDay: card.closingDay, dueDay: card.dueDay, color: card.color, inactive: !!card.inactive }
         : { name: '', amount: 0, amountText: '', closingDay: 28, dueDay: 5, color: '#1e1b4b', inactive: false }
     });
   }
@@ -3595,7 +3618,7 @@ class Component extends DCLogic {
     const total = Math.max(0, this.invoiceRemaining(id, ym, true));
     this.setState({
       modal: 'pay',
-      form: { amount: total, amountText: this.fmt(total), accountId: (existing && existing.accountId) || (s.accounts[0] && s.accounts[0].id) || '' }
+      form: { amount: total, amountText: this.fmtNum(total), accountId: (existing && existing.accountId) || (s.accounts[0] && s.accounts[0].id) || '' }
     });
   }
 
@@ -3701,7 +3724,8 @@ class Component extends DCLogic {
     this.up(s => ({ accounts: s.accounts.filter(a => a.id !== id), transactions: s.transactions.filter(t => t.accountId !== id), payments: s.payments.filter(p => p.accountId !== id) }));
   }
   saveCard() {
-    const f = this.state.form;
+    let f = this.state.form;
+    if (f.calc) { const v = this.evalExpr(f.calcText); if (v === null) return this.toast('Termine a conta no campo de valor.'); f = Object.assign({}, f, { amount: v }); }
     if (!f.name) return this.toast('Dê um nome ao cartão.');
     const id = f.id || this.uid();
     this.up(s => ({
@@ -3727,7 +3751,9 @@ class Component extends DCLogic {
     this.up(s => ({ categories: s.categories.filter(c => c.id !== id) }));
   }
   payInvoice() {
-    const f = this.state.form, s = this.state, ym = s.refMonth, cardId = s.selectedCardId;
+    let f = this.state.form; const s = this.state;
+    if (f.calc) { const v = this.evalExpr(f.calcText); if (v === null) return this.toast('Termine a conta no campo de valor.'); f = Object.assign({}, f, { amount: v }); }
+    const ym = s.refMonth, cardId = s.selectedCardId;
     if (!f.amount) return this.toast('Informe o valor pago.');
     if (!f.accountId) return this.toast('Escolha a conta de débito.');
     const rec = { id: this.uid(), cardId: cardId, month: ym, amount: f.amount, accountId: f.accountId, date: this.todayStr() };
@@ -3762,7 +3788,7 @@ class Component extends DCLogic {
     return { value: Number(raw || 0), from: bestM, pct: null };
   }
   evalExpr(txt) {
-    const t = String(txt || '').replace(/\s/g, '').replace(/,/g, '.').replace(/×/g, '*').replace(/÷/g, '/').replace(/[+\-*/.]+$/, '');
+    const t = String(txt || '').replace(/\s/g, '').replace(/[0-9][0-9.]*,[0-9]*/g, m => m.replace(/\./g, '')).replace(/,/g, '.').replace(/×/g, '*').replace(/÷/g, '/').replace(/[+\-*/.]+$/, '');
     if (!t || !/^[0-9+\-*/().]+$/.test(t)) return null;
     try {
       const v = Function('"use strict";return (' + t + ')')();
@@ -3814,7 +3840,7 @@ class Component extends DCLogic {
     this.setState({
       modal: 'sub',
       form: sub
-        ? { id: sub.id, desc: sub.desc, amount: sub.amount, amountText: sub.amount ? this.fmt(sub.amount) : '', categoryId: sub.categoryId, day: String(sub.day), pay: sub.pay, accountId: sub.accountId || (s.accounts[0] && s.accounts[0].id), cardId: sub.cardId || (s.cards[0] && s.cards[0].id), start: sub.start, applyFrom: s.refMonth > sub.start ? s.refMonth : sub.start }
+        ? { id: sub.id, desc: sub.desc, amount: sub.amount, amountText: sub.amount ? this.fmtNum(sub.amount) : '', categoryId: sub.categoryId, day: String(sub.day), pay: sub.pay, accountId: sub.accountId || (s.accounts[0] && s.accounts[0].id), cardId: sub.cardId || (s.cards[0] && s.cards[0].id), start: sub.start, applyFrom: s.refMonth > sub.start ? s.refMonth : sub.start }
         : { desc: '', amount: 0, amountText: '', categoryId: cats[0] ? cats[0].id : '', day: '1', pay: 'account', accountId: s.accounts[0] ? s.accounts[0].id : '', cardId: s.cards[0] ? s.cards[0].id : '', start: s.refMonth }
     });
   }
@@ -3916,7 +3942,7 @@ class Component extends DCLogic {
       .sort((a, b) => (a.date > b.date ? 1 : -1))
       .map(t => ({
         date: this.dateFull(t.date), desc: t.desc, cat: this.cat(t.categoryId).name,
-        inst: t.inst ? t.inst.n + '/' + t.inst.total : '', amount: t.amount
+        inst: t.inst ? t.inst.n + ' de ' + t.inst.total : '', amount: t.amount
       }));
     return { card: card, rows: rows, total: rows.reduce((a, r) => a + r.amount, 0) };
   }
@@ -3925,14 +3951,17 @@ class Component extends DCLogic {
     const map = {};
     txs.forEach(t => { const k = t.categoryId || '_'; (map[k] = map[k] || { id: k, total: 0, count: 0 }); map[k].total += t.amount; map[k].count++; });
     const list = Object.values(map).sort((a, b) => b.total - a.total);
-    const max = list.length ? list[0].total : 0;
+    const absSum = list.reduce((a, g) => a + Math.abs(g.total), 0);
+    const max = list.reduce((m, g) => Math.max(m, Math.abs(g.total)), 0);
     return list.map(g => {
       const c = this.cat(g.id);
-      const share = total > 0 ? (g.total / total) * 100 : 0;
+      // % e barra pelo valor absoluto: estorno (negativo) não gera % negativo nem acima de 100%
+      const share = absSum > 0 ? (Math.abs(g.total) / absSum) * 100 : 0;
       return {
         name: c.name, icon: c.icon, color: c.color, tint: this.tint(c.color), count: g.count,
         countLabel: g.count + (g.count === 1 ? ' item' : ' itens'),
-        totalFmt: this.money(g.total), pct: (max > 0 ? (g.total / max) * 100 : 0).toFixed(0) + '%',
+        totalFmt: (g.total < 0 ? '- ' : '') + this.money(Math.abs(g.total)), totalClass: g.total < 0 ? 'text-emerald-600' : '',
+        pct: (max > 0 ? (Math.abs(g.total) / max) * 100 : 0).toFixed(0) + '%',
         pctLabel: share.toFixed(0) + '%'
       };
     });
@@ -4040,11 +4069,13 @@ class Component extends DCLogic {
     if (this.state.tab !== 'reports' || !window.Chart) return;
     const pie = document.getElementById('fin-pie'), bars = document.getElementById('fin-bars');
     const byCat = this.expensesByCategory(this.state.refMonth, this.state.balanceView === 'cash');
+    // estorno maior que o gasto deixa a categoria negativa: fica fora da rosca (não existe fatia negativa)
+    const byCatPos = byCat.filter(c => c.total > 0.004);
     if (this._pie) { this._pie.destroy(); this._pie = null; }
     if (this._bars) { this._bars.destroy(); this._bars = null; }
     if (pie) this._pie = new Chart(pie, {
       type: 'doughnut',
-      data: { labels: byCat.map(c => c.name), datasets: [{ data: byCat.map(c => c.total), backgroundColor: byCat.map(c => c.color), borderWidth: 0 }] },
+      data: { labels: byCatPos.map(c => c.name), datasets: [{ data: byCatPos.map(c => c.total), backgroundColor: byCatPos.map(c => c.color), borderWidth: 0 }] },
       options: { cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11, family: 'Plus Jakarta Sans' } } } }, maintainAspectRatio: false }
     });
     const rows = this.monthlySeries(this.state.balanceView === 'cash');
@@ -4053,8 +4084,8 @@ class Component extends DCLogic {
       data: {
         labels: rows.map(r => r.label),
         datasets: [
-          { label: 'Receitas', data: rows.map(r => r.income), backgroundColor: '#4a45e0', borderRadius: 6, maxBarThickness: 18 },
-          { label: 'Despesas', data: rows.map(r => r.expense), backgroundColor: '#e11d48', borderRadius: 6, maxBarThickness: 18 }
+          { label: 'Receitas', data: rows.map(r => Math.max(0, r.income)), backgroundColor: '#4a45e0', borderRadius: 6, maxBarThickness: 18 },
+          { label: 'Despesas', data: rows.map(r => Math.max(0, r.expense)), backgroundColor: '#e11d48', borderRadius: 6, maxBarThickness: 18 }
         ]
       },
       options: {
@@ -4151,11 +4182,22 @@ class Component extends DCLogic {
       const c = this.cat(t.categoryId);
       const where = t.pay === 'card' ? (this.card(t.cardId) ? this.card(t.cardId).name : 'Cartão') : (this.account(t.accountId) ? this.account(t.accountId).name : 'Conta');
       const inst = t.inst ? ' · ' + t.inst.n + '/' + t.inst.total : '';
+      // estorno = despesa com valor negativo: mostra como entrada (verde), sem o "- -"
+      const isRefund = t.type === 'expense' && Number(t.amount) < 0;
+      const absVal = t.fx ? this.moneyC(Math.abs(t.fx.amount), t.fx.cur) : this.money(Math.abs(t.amount));
       return {
         id: t.id, desc: t.desc, icon: c.icon, color: c.color, tint: this.tint(c.color),
-        meta: c.name + ' · ' + where + inst + (t.pay === 'card' ? ' · fatura ' + this.monthName(t.invoiceMonth, false) : (t.paid ? '' : ' · pendente')) + (t.fx ? ' · ≈ ' + this.money(t.amount) : ''),
-        amountFmt: (t.type === 'income' ? '+ ' : '- ') + (t.fx ? this.moneyC(t.fx.amount, t.fx.cur) : this.money(t.amount)),
-        amountClass: t.type === 'income' ? 'text-brand-600' : 'text-rose-600',
+        isRefund: isRefund,
+        // Início e detalhe: texto "Estorno ·" na linha de baixo; fatura (aba Cartões): etiqueta, sem repetir no texto
+        meta: (isRefund ? 'Estorno · ' : '') + c.name + ' · ' + where + inst + (t.pay === 'card' ? ' · fatura ' + this.monthName(t.invoiceMonth, false) : (t.paid ? '' : ' · pendente')) + (t.fx ? ' · ≈ ' + this.money(Math.abs(t.amount)) : ''),
+        invMeta: c.name + ' · ' + where + inst + (t.pay === 'card' ? ' · fatura ' + this.monthName(t.invoiceMonth, false) : (t.paid ? '' : ' · pendente')) + (t.fx ? ' · ≈ ' + this.money(Math.abs(t.amount)) : ''),
+        amountFmt: (t.type === 'income' || isRefund ? '+ ' : '- ') + absVal,
+        amountClass: isRefund ? 'text-emerald-600' : t.type === 'income' ? 'text-brand-600' : 'text-rose-600',
+        // aba Cartões (fatura): valores sem sinal; só o estorno leva "-" e a linha inteira fica verde
+        invAmountFmt: (isRefund ? '- ' : '') + absVal,
+        invTextClass: isRefund ? 'text-emerald-600' : '',
+        invMetaClass: isRefund ? 'text-emerald-600' : 'text-slate-400',
+        invInstClass: isRefund ? 'text-emerald-600' : 'text-brand-600',
         dateFmt: this.dateBR(t.date),
         installmentLabel: t.inst ? t.inst.n + '/' + t.inst.total : '',
         invoiceMonth: t.invoiceMonth,
@@ -4277,20 +4319,20 @@ class Component extends DCLogic {
       const inherited = !!bf.from && bf.from !== s.refMonth && limit > 0;
       const spent = planTx.reduce((a, t) => a + (t.type === 'expense' && t.categoryId === c.id ? t.amount : 0), 0);
       const instPart = planCash ? planTx.reduce((a, t) => a + (t.categoryId === c.id && t.inst ? t.amount : 0), 0) : 0;
-      const pct = limit > 0 ? Math.min(100, (spent / limit) * 100) : (spent > 0 ? 100 : 0);
+      const pct = limit > 0 ? Math.max(0, Math.min(100, (spent / limit) * 100)) : (spent > 0 ? 100 : 0);
       const over = limit > 0 && spent > limit;
       const share = base > 0 ? (limit / base) * 100 : 0;
       return {
         id: c.id, name: c.name, icon: c.icon, color: c.color, tint: this.tint(c.color), limit: limit,
         budgetText: pctMode ? (bf.pct != null ? bf.pct : share).toFixed(1).replace('.', ',') + '%' : this.fmt(limit),
         pct: pct.toFixed(0) + '%',
-        pctLabel: limit > 0 ? Math.round((spent / limit) * 100) + '%' : '—',
+        pctLabel: limit > 0 ? Math.max(0, Math.round((spent / limit) * 100)) + '%' : '—',
         barColor: over ? '#e11d48' : pct > 80 ? '#ea580c' : '#4a45e0',
         shareLabel: bf.pct != null ? bf.pct.toFixed(1).replace('.', ',') + '% da base' : (base > 0 && limit > 0 ? share.toFixed(1).replace('.', ',') + '% da base' : ''),
         open: () => this.setState({ modal: 'detail', form: { categoryId: c.id, view: planCash ? 'cash' : 'accrual', plan: { limit: limit, spent: spent, inst: instPart } } }),
         inheritLabel: inherited ? 'herdado de ' + this.monthName(bf.from, false) : '',
         instLabel: instPart > 0 ? this.fmt(instPart) + ' em parcelas' : '',
-        statusLabel: limit > 0 ? this.fmt(spent) + ' / ' + this.fmt(limit) : this.fmt(spent) + ' · sem limite',
+        statusLabel: limit > 0 ? this.moneyS(spent) + ' / ' + this.fmt(limit) : this.moneyS(spent) + ' · sem limite',
         onBudget: e => {
           const d = (e.target.value || '').replace(/\D/g, '');
           if (pctMode) { if (base <= 0) return this.toast('Defina a base antes de usar %.'); this.setBudget(c.id, { pct: Number(d) / 10 }); }
@@ -4310,7 +4352,8 @@ class Component extends DCLogic {
     });
 
     const rows = this.monthlySeries(cashView).map(r => ({
-      label: r.label, incomeFmt: this.money(r.income), expenseFmt: this.money(r.expense),
+      label: r.label, incomeFmt: this.money(r.income), expenseFmt: this.money(Math.abs(r.expense)),
+      expenseSignFmt: (r.expense >= 0 ? '- ' : '+ ') + this.money(Math.abs(r.expense)), expenseClass: r.expense >= 0 ? 'text-rose-600' : 'text-emerald-600',
       netFmt: this.money(r.income - r.expense), netClass: r.income - r.expense >= 0 ? 'text-brand-600' : 'text-rose-600'
     }));
 
@@ -4387,6 +4430,9 @@ class Component extends DCLogic {
       openInvoices: this.money(openInv),
       openInvoicesAll: this.money(openInv),
       monthIncome: this.money(shownIn), monthExpense: this.money(shownOut),
+      // sinal único: despesas líquidas negativas (mais estorno que gasto) aparecem como entrada verde
+      monthIncomeFmt: (shownIn >= 0 ? '+ ' : '- ') + this.money(Math.abs(shownIn)), monthIncomeClass: shownIn >= 0 ? 'text-brand-600' : 'text-rose-600',
+      monthExpenseFmt: (shownOut >= 0 ? '- ' : '+ ') + this.money(Math.abs(shownOut)), monthExpenseClass: shownOut >= 0 ? 'text-rose-600' : 'text-emerald-600',
       monthNet: this.money(shownIn - shownOut), netClass: shownIn - shownOut >= 0 ? 'text-brand-600' : 'text-rose-600',
       setViewAccrual: () => this.setState({ balanceView: 'accrual' }),
       setViewCash: () => this.setState({ balanceView: 'cash' }),
@@ -4395,8 +4441,8 @@ class Component extends DCLogic {
       balanceViewNote: cashView
         ? 'Caixa: despesas em conta pela data e compras no cartão no mês da fatura, cada parcela no seu mês, sempre na categoria original.'
         : 'Competência: tudo o que foi lançado com data no mês, inclusive compras no cartão que só serão pagas na fatura.',
-      balanceBarIncome: ((shownIn + shownOut) ? (shownIn / (shownIn + shownOut)) * 100 : 50).toFixed(1) + '%',
-      balanceBarExpense: ((shownIn + shownOut) ? (shownOut / (shownIn + shownOut)) * 100 : 50).toFixed(1) + '%',
+      balanceBarIncome: (() => { const a = Math.max(0, shownIn), b = Math.max(0, shownOut); return ((a + b) ? (a / (a + b)) * 100 : 50).toFixed(1) + '%'; })(),
+      balanceBarExpense: (() => { const a = Math.max(0, shownIn), b = Math.max(0, shownOut); return ((a + b) ? (b / (a + b)) * 100 : 50).toFixed(1) + '%'; })(),
       recentTx: recent, hasRecent: recent.length > 0, noRecent: recent.length === 0,
       canToggleAllTx: listTx.length > 8,
       allTxLabel: s.showAllTx ? 'Mostrar menos' : 'Ver todas as ' + listTx.length,
@@ -4405,8 +4451,9 @@ class Component extends DCLogic {
       toggleAllTx: () => this.setState({ showAllTx: !s.showAllTx }),
       pendingNote: pendingTotal > 0 ? this.money(pendingTotal) + ' em despesas pendentes' : monthSorted.length + (monthSorted.length === 1 ? ' lançamento' : ' lançamentos'),
       topCats: byCat.map(c => ({
-        name: c.name, icon: c.icon, color: c.color, totalFmt: this.money(c.total),
-        pct: ((c.total / maxCat) * 100).toFixed(0) + '%',
+        name: c.name, icon: c.icon, color: c.color,
+        totalFmt: c.total < 0 ? '+ ' + this.money(-c.total) : this.money(c.total), totalClass: c.total < 0 ? 'text-emerald-600' : '',
+        pct: (maxCat > 0 ? Math.max(0, (c.total / maxCat) * 100) : 0).toFixed(0) + '%',
         open: () => this.setState({ modal: 'detail', form: { categoryId: c.id } })
       })),
       hasTopCats: byCat.length > 0, noTopCats: byCat.length === 0,
@@ -4474,8 +4521,8 @@ class Component extends DCLogic {
           fg: ink.fg, fgMuted: ink.fgMuted, fgFaint: ink.fgFaint,
           trackBg: ink.trackBg, barBg: ink.barBg,
           invoiceMonthLabel: this.monthName(s.refMonth, false),
-          invoiceTotalFmt: this.money(total),
-          invoiceStatus: c.inactive ? 'Desativado' : paid ? 'Quitada' : paidSum > 0 ? 'Parcial · restam ' + this.money(rest) : total > 0 ? 'Aberta · vence dia ' + c.dueDay : 'Sem lançamentos',
+          invoiceTotalFmt: this.moneyS(total),
+          invoiceStatus: c.inactive ? 'Desativado' : total < -0.004 ? 'Crédito na fatura' : paid ? 'Quitada' : paidSum > 0 ? 'Parcial · restam ' + this.money(rest) : total > 0 ? 'Aberta · vence dia ' + c.dueDay : 'Sem lançamentos',
           usedFmt: this.money(used), limitFmt: this.money(c.limit),
           usedPct: (c.limit > 0 ? Math.min(100, (used / c.limit) * 100) : 0).toFixed(0) + '%',
           wrapClass: 'shrink-0 snap-start w-[270px] rounded-2xl p-5 text-left transition ' + (s.dragCardId === c.id ? 'scale-[1.04] shadow-2xl shadow-black/30 ring-2 ring-brand-500 z-10 ' : s.dragCardId ? 'opacity-70 ' : '') + (c.id === selId ? 'ring-2 ring-brand-500 ring-offset-2 ring-offset-[#f4f4f8]' : 'opacity-90 hover:opacity-100'),
@@ -4489,9 +4536,9 @@ class Component extends DCLogic {
       selCard: sel ? {
         name: sel.name, closingDay: sel.closingDay, dueDay: sel.dueDay,
         invoiceMonthLabel: this.monthName(s.refMonth, false),
-        invoiceTotalFmt: this.money(selTotal),
+        invoiceTotalFmt: this.moneyS(selTotal), invoiceTotalClass: selTotal < -0.004 ? 'text-emerald-600' : '',
         itemsLabel: invoiceItems.length + (invoiceItems.length === 1 ? ' lançamento' : ' lançamentos')
-      } : { name: '', closingDay: '', dueDay: '', invoiceMonthLabel: '', invoiceTotalFmt: '', itemsLabel: '' },
+      } : { name: '', closingDay: '', dueDay: '', invoiceMonthLabel: '', invoiceTotalFmt: '', invoiceTotalClass: '', itemsLabel: '' },
       invoiceItems: invoiceItems, hasInvoiceItems: invoiceItems.length > 0, noInvoiceItems: invoiceItems.length === 0,
       payBtnLabel: selRest === 0 && selTotal > 0 ? 'Fatura quitada' : selPaidSum > 0 ? 'Pagar restante' : 'Pagar fatura',
       payBtnClass: selRest === 0 && selTotal > 0 ? 'bg-brand-50 text-brand-700' : 'bg-brand-600 text-white',
@@ -4516,8 +4563,8 @@ class Component extends DCLogic {
       budgetModePctClass: pctMode ? segOn : segOff,
       budgetShareLabel: base > 0 ? Math.round((budgetTotal / base) * 100) + '% da base' : 'defina a base para usar %',
       budgetBaseNote: baseRef.from && baseRef.from !== s.refMonth && base > 0 ? 'base herdada de ' + this.monthName(baseRef.from, false) : '',
-      budgetTotalFmt: this.money(budgetTotal), budgetSpentFmt: this.money(budgetSpent),
-      budgetLeftFmt: this.money(budgetTotal - budgetSpent),
+      budgetTotalFmt: this.money(budgetTotal), budgetSpentFmt: this.moneyS(budgetSpent),
+      budgetLeftFmt: this.moneyS(budgetTotal - budgetSpent),
       budgetLeftClass: budgetTotal - budgetSpent < 0 ? 'text-rose-600' : 'text-brand-600',
       budgetOutsideNote: budgetTotal === 0
         ? 'Defina um limite nas categorias abaixo para acompanhar o consumo do mês.'
@@ -4573,28 +4620,30 @@ class Component extends DCLogic {
 
       hasDetailBudget: s.modal === 'detail' && !!(f.plan && f.plan.limit > 0),
       detailBudgetLimit: f.plan ? this.money(f.plan.limit) : '',
-      detailBudgetSpent: f.plan ? this.money(f.plan.spent) : '',
+      detailBudgetSpent: f.plan ? this.moneyS(f.plan.spent) : '',
       detailBudgetLeft: f.plan ? this.money(Math.abs(f.plan.limit - f.plan.spent)) : '',
       detailBudgetLeftLabel: f.plan && f.plan.spent > f.plan.limit ? 'Estourou' : 'Resta',
       detailBudgetLeftClass: f.plan && f.plan.spent > f.plan.limit ? 'text-rose-600' : 'text-green-600',
       detailBudgetInst: f.plan && f.plan.inst > 0 ? 'Inclui ' + this.money(f.plan.inst) + ' de parcelas já comprometidas' : '',
       detailRows: detail.rows,
-      detailTotalFmt: this.money(detail.total),
+      detailTotalFmt: this.moneyS(detail.total),
       detailCountLabel: detail.countLabel,
       hasDetailRows: detail.rows.length > 0,
       noDetailRows: s.modal === 'detail' && detail.rows.length === 0,
 
-      amountDisplay: f.calc ? (f.calcText || '') : (f.amountText ? this.fmtC(f.amount, formCur) : ''),
-      amountPlaceholder: this.fmtC(0, formCur),
+      // valor sempre digitado em reais (ou na moeda da conta), sem o símbolo, com ou sem conta
+      amountDisplay: f.calc ? (f.calcText || '') : (f.amountText === 'x' || /R\$|[A-Z]{3}/.test(f.amountText || '') ? this.fmtNum(f.amount) : (f.amountText || '')),
+      amountPlaceholder: '0,00',
       fxHint: formCur === 'BRL' || s.modal === 'account' ? '' : this.accRate(f.accountId) > 0
         ? 'Valor em ' + formCur + (f.amount && f.type !== 'transfer' ? ' · ≈ ' + this.fmt(f.amount * this.accRate(f.accountId)) : '') + ' pelo custo médio (1 ' + formCur + ' = ' + this.rateLabel(this.accRate(f.accountId)) + ')'
         : 'Valor em ' + formCur + ' · o equivalente em reais sai da sua primeira conversão',
       hasFxHint: formCur !== 'BRL' && s.modal !== 'account',
       transferNeedsConversion: s.modal === 'tx' && f.type === 'transfer' && f.accountId && f.toAccountId && this.accCur(f.accountId) !== this.accCur(f.toAccountId),
       toCurLabel: this.accCur(f.toAccountId),
-      toAmountDisplay: f.toAmountText ? this.fmtC(f.toAmount, this.accCur(f.toAccountId)) : '',
-      toAmountPlaceholder: this.fmtC(0, this.accCur(f.toAccountId)),
-      onToAmount: e => { const d = (e.target.value || '').replace(/\D/g, '').replace(/^0+/, ''); this.setForm({ toAmount: Number(d) / 100, toAmountText: d ? 'x' : '' }); },
+      toAmountDisplay: f.toAmountText === 'x' ? this.fmtNum(f.toAmount) : (f.toAmountText || ''),
+      toAmountPlaceholder: '0,00',
+      onToAmount: e => { const raw = String(e.target.value || '').replace(/[^0-9.,]/g, ''); const v = this.parseNum(raw); this.setForm({ toAmount: v === null ? 0 : v, toAmountText: raw }); },
+      onToAmountBlur: () => { if (!f.toAmountText || f.toAmountText === 'x') return; const v = this.parseNum(f.toAmountText); if (v !== null) this.setForm({ toAmount: v, toAmountText: this.fmtNum(v) }); },
       convRateLabel: (() => {
         const fc = this.accCur(f.accountId), tc = this.accCur(f.toAccountId);
         if (!(f.amount > 0 && f.toAmount > 0) || fc === tc) return 'A cotação desta conversão entra no seu custo médio da moeda.';
@@ -4616,17 +4665,20 @@ class Component extends DCLogic {
       calcHint: f.calc ? 'Digite a conta e toque em = (ex.: 10 + 2)' : 'Toque em + − × ÷ para usar a calculadora',
       calcOps: ['+', '-', '×', '÷'].map(op => ({
         label: op,
-        press: () => {
-          const cur = f.calc ? (f.calcText || '') : String((Number(f.amount) || 0).toFixed(2)).replace('.', ',');
+        press: e => {
+          this.refocusAmount(e);
+          const cur = f.calc ? (f.calcText || '') : (f.amount ? this.fmtNum(f.amount) : '0');
           this.setForm({ calc: true, calcText: cur + ' ' + (op === '×' ? '*' : op === '÷' ? '/' : op) + ' ' });
         }
       })),
+      // mantém o teclado aberto: o toque no botão não tira o foco do campo de valor
+      keepFocus: e => { if (e && e.preventDefault) e.preventDefault(); },
       calcEq: () => {
         const v = this.evalExpr(f.calcText);
         if (v === null) return this.toast('Conta inválida.');
-        this.setForm({ calc: false, calcText: '', amount: v, amountText: this.fmt(v) });
+        this.setForm({ calc: false, calcText: '', amount: v, amountText: this.fmtNum(v) });
       },
-      calcClear: () => this.setForm({ calc: false, calcText: '', amount: 0, amountText: '' }),
+      calcClear: e => { this.refocusAmount(e); this.setForm({ calc: false, calcText: '', amount: 0, amountText: '' }); },
 
       modalOpen: !!s.modal, closeModal: () => this.close(),
       isTxModal: s.modal === 'tx', isAccountModal: s.modal === 'account', isCardModal: s.modal === 'card',
@@ -4657,11 +4709,17 @@ class Component extends DCLogic {
       typeIncomeClass: f.type === 'income' ? segOn : segOff,
       amountColorClass: f.type === 'income' ? 'text-brand-600' : f.type === 'transfer' ? 'text-ink' : 'text-rose-600',
       onAmount: e => {
-        const raw = e.target.value || '';
-        if (f.calc) return this.setForm({ calcText: raw.replace(/[^0-9+\-*/.,() ]/g, '') });
-        if (/[+\-*/]/.test(raw.replace(/^-/, ''))) return this.setForm({ calc: true, calcText: raw.replace(/[^0-9+\-*/.,() ]/g, '') });
-        const d = raw.replace(/\D/g, '').replace(/^0+/, ''); const v = Number(d) / 100;
-        this.setForm({ amount: v, amountText: d ? this.fmt(v) : '' });
+        // mesmo padrão com ou sem operador: digita em reais (ex.: 12,50), sem R$ no campo
+        const raw = String(e.target.value || '').replace(/×/g, '*').replace(/÷/g, '/').replace(/[^0-9+\-*/.,() ]/g, '');
+        const hasOp = /[+*/()]/.test(raw) || /[0-9.,)]\s*-/.test(raw);
+        if (hasOp) return this.setForm({ calc: true, calcText: raw, amountText: raw });
+        const v = this.parseNum(raw);
+        this.setForm({ calc: false, calcText: '', amount: v === null ? 0 : v, amountText: raw });
+      },
+      onAmountBlur: () => {
+        if (f.calc || !f.amountText || f.amountText === 'x') return;
+        const v = this.parseNum(f.amountText);
+        if (v !== null) this.setForm({ amount: v, amountText: this.fmtNum(v) });
       },
       onDesc: e => this.setForm({ desc: e.target.value }),
       descSuggestions: descSug.map(d => ({ label: d, pick: () => this.setForm({ desc: d }) })),
