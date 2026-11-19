@@ -3093,6 +3093,10 @@
               <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="0,00" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[18px] font-bold num text-right placeholder:text-slate-300" />
             </label>
             <label class="block">
+              <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Data do pagamento</span>
+              <input onChange="{{ onPayDate }}" value="{{ form.date }}" type="date" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[13.5px]" />
+            </label>
+            <label class="block">
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Debitar da conta</span>
               <select onChange="{{ onAccount }}" value="{{ form.accountId }}" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[13.5px]">
                 <sc-for list="{{ accountOptions }}" as="a" hint-placeholder-count="2">
@@ -3269,14 +3273,21 @@ class Component extends DCLogic {
     }, () => this.save());
   }
 
-  /* custo médio ponderado: cada conversão entra no "estoque" da moeda; gastos saem pelo custo médio */
+  /* custo médio ponderado (preço médio), reprocessado do zero, em ordem de data, a cada mudança:
+     - compra de moeda (transferência que entra na conta): novo médio = (saldo × médio + reais pagos) ÷ (saldo + comprado)
+     - gasto/saque: sai pelo médio do momento e não muda o médio
+     - receita em moeda (ex.: reembolso), saldo inicial: entram pelo médio do momento e não mudam o médio
+     - pendente (não efetivado): recebe o médio da data, mas não mexe no saldo nem no médio (igual ao saldo da conta)
+     - saldo zerado: o médio exibido continua o último; a próxima compra define um médio novo */
   recomputeFx(txs, accounts) {
     const foreign = accounts.filter(a => (a.currency || 'BRL') !== 'BRL');
     if (!foreign.length) return { tx: txs, acc: accounts };
+    const EPS = 0.000001;
     const order = {}; txs.forEach((t, i) => { order[t.id] = i; });
     const sorted = txs.slice().sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : order[a.id] - order[b.id]));
-    // saldo inicial e recebimentos não são custo: entram sem mexer no custo médio.
-    // enquanto não houver conversão, a moeda fica "sem preço" e usa a cotação de referência.
+    const accOf = {}; accounts.forEach(a => { accOf[a.id] = a; });
+    const inRange = (id, date) => { const a = accOf[id]; return !a || !a.initialDate || (date || '') >= a.initialDate; };
+    // enquanto não houver conversão, a moeda fica "sem preço" e usa a cotação de referência (ou a da 1ª conversão)
     const firstConv = {};
     sorted.forEach(t => {
       if (t.type !== 'transfer' || t.pay !== 'account' || firstConv[t.toAccountId]) return;
@@ -3284,33 +3295,39 @@ class Component extends DCLogic {
       if (units > 0 && this.accountsCur(accounts, t.accountId) === 'BRL') firstConv[t.toAccountId] = t.amount / units;
     });
     const pool = {};
-    foreign.forEach(a => { pool[a.id] = { units: Number(a.initial) || 0, cost: 0, priced: false, base: Number(a.rate) || firstConv[a.id] || 0 }; });
-    const avg = id => { const p = pool[id]; return p.priced && p.units > 0.0001 ? p.cost / p.units : p.base; };
-    const addFree = (id, units) => { const p = pool[id]; if (p.priced) p.cost += units * avg(id); p.units += units; };
+    foreign.forEach(a => { pool[a.id] = { units: Number(a.initial) || 0, cost: 0, priced: false, last: 0, base: Number(a.rate) || firstConv[a.id] || 0 }; });
+    const avg = id => { const p = pool[id]; return p.priced && p.units > EPS ? p.cost / p.units : (p.last || p.base); };
+    const settle = p => { if (Math.abs(p.units) <= EPS) { p.units = 0; p.cost = 0; } };
+    const addFree = (id, units) => { const p = pool[id]; const r = avg(id); if (p.priced) p.cost += units * r; p.units += units; settle(p); };
     const addBought = (id, units, brl) => {
       const p = pool[id];
       if (!p.priced) { const r = units > 0 ? brl / units : p.base; p.units += units; p.cost = p.units * r; p.priced = true; }
+      else if (p.units <= EPS) { p.units = units; p.cost = brl; }
       else { p.units += units; p.cost += brl; }
+      if (p.units > EPS) p.last = p.cost / p.units;
+      settle(p);
     };
     const out = (id, units) => {
       const p = pool[id], r = avg(id);
       p.units -= units; if (p.priced) p.cost -= units * r;
-      if (p.units <= 0.0001) { p.units = Math.max(0, p.units); p.cost = 0; p.priced = false; }
+      if (p.units <= EPS) { p.units = 0; p.cost = 0; }
+      if (r > 0) p.last = r;
       return r;
     };
     const patched = {};
     sorted.forEach(t => {
       if (t.pay !== 'account') return;
       if (t.type === 'transfer') {
-        const fromF = pool[t.accountId], toF = pool[t.toAccountId];
-        let brlValue = fromF ? t.amount * out(t.accountId, t.amount) : t.amount;
+        const fromF = pool[t.accountId] && inRange(t.accountId, t.date), toF = pool[t.toAccountId] && inRange(t.toAccountId, t.date);
+        const brlValue = fromF ? t.amount * out(t.accountId, t.amount) : t.amount;
         if (toF) addBought(t.toAccountId, t.toAmount != null ? t.toAmount : t.amount, brlValue);
         return;
       }
       if (!pool[t.accountId]) return;
       const native = this.nativeAmt(t);
       let r;
-      if (t.type === 'income') { r = avg(t.accountId); addFree(t.accountId, native); }
+      if (!inRange(t.accountId, t.date) || t.paid === false) r = avg(t.accountId);
+      else if (t.type === 'income') { r = avg(t.accountId); addFree(t.accountId, native); }
       else r = out(t.accountId, native);
       const cur = this.accountsCur(accounts, t.accountId);
       patched[t.id] = Object.assign({}, t, { amount: Math.round(native * r * 100) / 100, fx: { cur: cur, amount: native, rate: Math.round(r * 10000) / 10000 } });
@@ -3392,7 +3409,9 @@ class Component extends DCLogic {
     } catch (x) {}
   }
   // número no padrão brasileiro, sem símbolo de moeda (campo de valor)
-  fmtNum(v) { return (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  // arredonda para centavos e elimina resíduos de soma (-0,0000000000008 -> 0)
+  r2(v) { const n = Math.round((Number(v) || 0) * 100) / 100; return Math.abs(n) < 0.005 ? 0 : n; }
+  fmtNum(v) { return this.r2(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   // "1.234,56" / "12,5" / "-50" / "12.5" -> número; vazio -> null
   parseNum(txt) {
     let t = String(txt || '').replace(/\s/g, '');
@@ -3401,18 +3420,25 @@ class Component extends DCLogic {
     const v = Number(t);
     return isFinite(v) ? Math.round(v * 100) / 100 : null;
   }
-  fmt(v) { return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  fmt(v) { return this.r2(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
   money(v) { return this.state.privacy ? 'R$ ••••' : this.fmt(v); }
   // negativo com sinal separado ("- R$ 50,00"), nunca "-R$" colado
   moneyS(v) { const n = Number(v) || 0; return n < -0.004 ? '- ' + this.money(-n) : this.money(Math.abs(n) < 0.005 ? 0 : n); }
   fmtC(v, cur) {
     cur = cur || 'BRL';
-    try { return (Number(v) || 0).toLocaleString('pt-BR', { style: 'currency', currency: cur }); }
-    catch (e) { return cur + ' ' + (Number(v) || 0).toFixed(2); }
+    const n = this.r2(v);
+    try { return n.toLocaleString('pt-BR', { style: 'currency', currency: cur }); }
+    catch (e) { return cur + ' ' + n.toFixed(2); }
   }
   moneyC(v, cur) {
     if (!this.state.privacy) return this.fmtC(v, cur);
     return this.fmtC(0, cur).replace(/[\d.,\s]+$/, '').trim() + ' ••••';
+  }
+  // nome de exibição padrão de toda conta: "Nome · MOEDA" (ex.: "Wise · MXN", "Conta Itaú · BRL")
+  accName(a) {
+    if (a && typeof a !== 'object') a = this.account(a);
+    if (!a) return 'Conta';
+    return a.name + ' · ' + (a.currency || 'BRL');
   }
   accCur(id) { const a = this.account(id); return (a && a.currency) || 'BRL'; }
   accRate(id) { const a = this.account(id); return a && a.currency && a.currency !== 'BRL' ? (Number(a.avgRate) || Number(a.rate) || 0) : 1; }
@@ -3522,9 +3548,9 @@ class Component extends DCLogic {
     });
     const r = this.accRate(id);
     s.payments.forEach(p => { if (p.accountId === id && this.accOk(id, p.date)) bal -= p.amount / r; });
-    return bal;
+    return this.r2(bal);
   }
-  accountBalanceBRL(id) { return this.accountBalance(id) * this.accRate(id); }
+  accountBalanceBRL(id) { return this.r2(this.accountBalance(id) * this.accRate(id)); }
   /* bank=true: como o app do banco mostra — assinaturas ainda não cobradas não entram */
   isPostedTx(t) { return !(t.subId && t.date > this.todayStr()); }
   invoiceTotal(cardId, ym, bank) {
@@ -3574,14 +3600,14 @@ class Component extends DCLogic {
       const ev = [];
       s.accounts.forEach(acc => {
         if (acc.initialDate !== ds || !Number(acc.initial)) return;
-        ev.push({ label: 'Saldo inicial · ' + acc.name, icon: 'fa-flag', color: '#64748b', delta: (Number(acc.initial) || 0) * this.accRate(acc.id) });
+        ev.push({ label: 'Saldo inicial · ' + this.accName(acc), icon: 'fa-flag', color: '#64748b', delta: (Number(acc.initial) || 0) * this.accRate(acc.id) });
       });
       s.transactions.forEach(t => {
         if (t.pay !== 'account' || t.date !== ds) return;
         if (t.type !== 'transfer' && !this.accOk(t.accountId, t.date)) return;
         if (t.type === 'transfer') {
           const from = this.account(t.accountId), to = this.account(t.toAccountId);
-          ev.push({ label: 'Transferência ' + (from ? from.name : '?') + ' → ' + (to ? to.name : '?'), icon: 'fa-right-left', color: '#64748b', delta: 0, info: true });
+          ev.push({ label: 'Transferência ' + (from ? this.accName(from) : '?') + ' → ' + (to ? this.accName(to) : '?'), icon: 'fa-right-left', color: '#64748b', delta: 0, info: true });
           return;
         }
         const c = this.cat(t.categoryId);
@@ -3685,7 +3711,7 @@ class Component extends DCLogic {
     const total = Math.max(0, this.invoiceRemaining(id, ym, true));
     this.setState({
       modal: 'pay',
-      form: { amount: total, amountText: this.fmtNum(total), accountId: (existing && existing.accountId) || (s.accounts[0] && s.accounts[0].id) || '' }
+      form: { amount: total, amountText: this.fmtNum(total), date: this.todayStr(), accountId: (existing && existing.accountId) || (s.accounts[0] && s.accounts[0].id) || '' }
     });
   }
 
@@ -3826,7 +3852,8 @@ class Component extends DCLogic {
     const ym = s.refMonth, cardId = s.selectedCardId;
     if (!f.amount) return this.toast('Informe o valor pago.');
     if (!f.accountId) return this.toast('Escolha a conta de débito.');
-    const rec = { id: this.uid(), cardId: cardId, month: ym, amount: f.amount, accountId: f.accountId, date: this.todayStr() };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f.date || '')) return this.toast('Informe a data do pagamento.');
+    const rec = { id: this.uid(), cardId: cardId, month: ym, amount: f.amount, accountId: f.accountId, date: f.date };
     const rest = this.invoiceRemaining(cardId, ym, true) - f.amount;
     this.up(st => ({ payments: st.payments.concat([rec]), modal: null, form: {} }));
     this.toast(rest > 0.005 ? 'Pago em parte — restam ' + this.fmt(rest) + ' nesta fatura.' : 'Fatura quitada — saldo da conta atualizado.');
@@ -4004,7 +4031,7 @@ class Component extends DCLogic {
       const c = t.type === 'transfer' ? { name: 'transferência' } : this.cat(t.categoryId);
       const card = t.pay === 'card' ? this.card(t.cardId) : null;
       const acc = this.account(t.accountId), to = this.account(t.toAccountId);
-      const hay = this.norm([t.desc, c && c.name, card && card.name, acc && acc.name, to && to.name].join(' '));
+      const hay = this.norm([t.desc, c && c.name, card && card.name, acc && this.accName(acc), to && this.accName(to)].join(' '));
       return tokens.every(k => hay.indexOf(k) >= 0);
     }).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   }
@@ -4285,7 +4312,7 @@ class Component extends DCLogic {
         const from = this.account(t.accountId), to = this.account(t.toAccountId);
         return {
           id: t.id, desc: t.desc || 'Transferência', icon: 'fa-right-left', color: '#64748b', tint: this.tint('#64748b'),
-          meta: (from ? from.name : '?') + ' → ' + (to ? to.name : '?') + (t.paid === false ? ' · pendente' : ''),
+          meta: (from ? this.accName(from) : '?') + ' → ' + (to ? this.accName(to) : '?') + (t.paid === false ? ' · pendente' : ''),
           amountFmt: this.moneyC(t.amount, this.accCur(t.accountId)) + (t.toAmount != null ? ' → ' + this.moneyC(t.toAmount, this.accCur(t.toAccountId)) : ''),
           amountClass: 'text-slate-500', dateFmt: this.dateBR(t.date),
           installmentLabel: '', invoiceMonth: null,
@@ -4293,7 +4320,7 @@ class Component extends DCLogic {
         };
       }
       const c = this.cat(t.categoryId);
-      const where = t.pay === 'card' ? (this.card(t.cardId) ? this.card(t.cardId).name : 'Cartão') : (this.account(t.accountId) ? this.account(t.accountId).name : 'Conta');
+      const where = t.pay === 'card' ? (this.card(t.cardId) ? this.card(t.cardId).name : 'Cartão') : this.accName(t.accountId);
       const inst = t.inst ? ' · ' + t.inst.n + '/' + t.inst.total : '';
       // estorno = despesa com valor negativo: mostra como entrada (verde), sem o "- -"
       const isRefund = t.type === 'expense' && Number(t.amount) < 0;
@@ -4346,7 +4373,7 @@ class Component extends DCLogic {
             return {
               id: p.id, desc: 'Pagamento de fatura', icon: 'fa-credit-card',
               color: (card && card.color) || '#64748b', tint: this.tint((card && card.color) || '#64748b'),
-              meta: (acc ? acc.name : 'conta') + ' · fatura ' + this.monthName(p.month, false),
+              meta: (acc ? this.accName(acc) : 'conta') + ' · fatura ' + this.monthName(p.month, false),
               amountFmt: '- ' + this.money(p.amount), amountClass: 'text-rose-600',
               dateFmt: this.dateBR(p.date), installmentLabel: '', invoiceMonth: null,
               del: () => {}, edit: () => {}, move: () => {}
@@ -4611,7 +4638,7 @@ class Component extends DCLogic {
         const bal = this.accountBalance(a.id);
         const cur = a.currency || 'BRL';
         return {
-          name: a.name, icon: a.icon, color: a.color, tint: this.tint(a.color),
+          name: this.accName(a), icon: a.icon, color: a.color, tint: this.tint(a.color),
           balanceFmt: this.moneyC(bal, cur), balanceClass: bal < 0 ? 'text-rose-600' : 'text-ink',
           initialFmt: this.moneyC(a.initial, cur) + (a.initialDate ? ' em ' + this.dateFull(a.initialDate) : ''),
           isForeign: cur !== 'BRL',
@@ -4703,7 +4730,7 @@ class Component extends DCLogic {
         const sub = Object.assign({}, this.subAt(base, s.refMonth), { id: base.id, start: base.start, end: base.end });
         const changes = (base.versions || []).length;
         const c = this.cat(sub.categoryId);
-        const where = sub.pay === 'card' ? (this.card(sub.cardId) ? this.card(sub.cardId).name : 'Cartão') : (this.account(sub.accountId) ? this.account(sub.accountId).name : 'Conta');
+        const where = sub.pay === 'card' ? (this.card(sub.cardId) ? this.card(sub.cardId).name : 'Cartão') : this.accName(sub.accountId);
         const active = !sub.end || sub.end >= s.refMonth;
         const thisMonth = s.transactions.find(t => t.subId === sub.id && t.subMonth === s.refMonth);
         return {
@@ -4865,6 +4892,7 @@ class Component extends DCLogic {
       },
       onCategory: e => this.setForm({ categoryId: e.target.value }),
       onAccount: e => this.setForm({ accountId: e.target.value }),
+      onPayDate: e => this.setForm({ date: e.target.value }),
       onPaid: e => this.setForm({ paid: e.target.checked }),
       onCard: e => {
         const id = e.target.value;
@@ -4889,14 +4917,16 @@ class Component extends DCLogic {
       formUsesAccount: s.modal === 'tx' && f.pay === 'account' && f.type !== 'transfer',
       formUsesCard: s.modal === 'tx' && f.pay === 'card' && f.type === 'expense',
       formCats: s.categories.filter(c => c.type === (f.type || 'expense')),
-      accountOptions: s.accounts.filter(a => s.modal !== 'pay' || (a.currency || 'BRL') === 'BRL').map(a => ({ id: a.id, name: a.name + ((a.currency || 'BRL') !== 'BRL' ? ' · ' + a.currency : '') })), cardOptions: s.cards.filter(c => !c.inactive || c.id === f.cardId),
+      accountOptions: s.accounts.filter(a => s.modal !== 'pay' || (a.currency || 'BRL') === 'BRL').map(a => ({ id: a.id, name: this.accName(a) })), cardOptions: s.cards.filter(c => !c.inactive || c.id === f.cardId),
       toggleCardInactive: () => this.setForm({ inactive: !f.inactive }),
       cardActiveLabel: f.inactive ? 'Cartão desativado' : 'Cartão ativo',
       cardActiveHint: f.inactive ? 'Não aparece nos lançamentos. Histórico e faturas continuam aqui.' : 'Disponível para novos lançamentos.',
       cardToggleClass: 'relative w-12 h-7 rounded-full transition shrink-0 ' + (f.inactive ? 'bg-slate-300' : 'bg-brand-600'),
       cardKnobClass: 'absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ' + (f.inactive ? 'left-1' : 'left-6'),
       installmentOptions: installmentOptions,
-      paidLabel: f.paid !== false ? 'Efetivado — já debita da conta' : 'Pendente — não afeta o saldo',
+      paidLabel: f.paid !== false
+        ? 'Já efetivado — ' + (f.type === 'income' ? 'já entrou na conta' : 'já saiu da conta') + ' e conta no saldo'
+        : 'Pendente — ' + (f.type === 'income' ? 'ainda não entrou' : 'ainda não saiu') + ', não afeta o saldo',
       invoiceHint: f.id
         ? 'Editando uma despesa já lançada: valor, categoria, data e mês da fatura podem mudar. Para reparcelar, exclua o lançamento e cadastre de novo com o número de parcelas.'
         : f.cardId && this.card(f.cardId)
