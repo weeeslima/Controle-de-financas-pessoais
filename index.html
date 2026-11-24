@@ -2053,14 +2053,13 @@
             <button onClick="{{ exportBackup }}" class="h-11 px-3.5 rounded-xl bg-brand-600 text-white text-[12px] font-bold shrink-0 flex items-center gap-1.5"><i class="fa-solid fa-download text-[11px]"></i>Baixar</button>
           </div>
         </sc-if>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-3 sm:grid-cols-2 items-start">
           <div class="rounded-2xl bg-brand-900 text-white p-5">
             <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-brand-300 font-semibold"><i class="fa-solid fa-wallet"></i>Saldo atual das contas</div>
-            <div class="mt-3 text-[30px] leading-none font-extrabold num">{{ totalBalance }}</div>
-          </div>
-          <div class="rounded-2xl bg-white p-5 border border-black/5">
-            <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold"><i class="fa-regular fa-credit-card"></i>Faturas abertas do mês</div>
-            <div class="mt-3 text-[30px] leading-none font-extrabold num text-orange-600">{{ openInvoices }}</div>
+            <div class="mt-3 text-[30px] leading-none font-extrabold num [overflow-wrap:anywhere]">{{ totalBalance }}</div>
+            <sc-if value="{{ hasExcludedAccs }}" hint-placeholder-val="{{ false }}">
+              <div class="mt-2 text-[11px] text-white/60 leading-snug">{{ excludedNote }}</div>
+            </sc-if>
           </div>
           <div class="rounded-2xl bg-white p-5 border border-black/5">
             <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold"><i class="fa-solid fa-arrow-right-arrow-left"></i>Balanço do mês</div>
@@ -2099,9 +2098,9 @@
                         <i class="fa-solid {{ t.icon }} text-[14px]" style="color:{{ t.color }}"></i>
                       </div>
                       <div class="min-w-0 flex-1">
-                        <div class="flex items-baseline gap-3">
-                          <span class="text-[14px] font-semibold min-w-0 flex-1 truncate">{{ t.desc }}</span>
-                          <span class="text-[14px] font-bold num shrink-0 {{ t.amountClass }}">{{ t.amountFmt }}</span>
+                        <div class="flex flex-wrap items-baseline gap-x-3">
+                          <span class="text-[14px] font-semibold min-w-0 flex-1 basis-[45%] truncate">{{ t.desc }}</span>
+                          <span class="text-[14px] font-bold num shrink-0 ml-auto {{ t.amountClass }}">{{ t.amountFmt }}</span>
                         </div>
                         <div class="flex items-baseline gap-2 text-[11.5px] text-slate-400">
                           <span class="min-w-0 flex-1 truncate">{{ t.meta }}</span>
@@ -2135,8 +2134,8 @@
                     <button onClick="{{ c.open }}" class="w-full text-left active:opacity-60">
                       <div class="flex items-center gap-2 text-[12.5px]">
                         <i class="fa-solid {{ c.icon }} text-[11px]" style="color:{{ c.color }}"></i>
-                        <span class="font-semibold truncate">{{ c.name }}</span>
-                        <span class="ml-auto num font-bold {{ c.totalClass }}">{{ c.totalFmt }}</span>
+                        <span class="font-semibold truncate min-w-0">{{ c.name }}</span>
+                        <span class="ml-auto num font-bold shrink-0 {{ c.totalClass }}">{{ c.totalFmt }}</span>
                         <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
                       </div>
                       <div class="mt-1.5 h-1.5 rounded-full bg-slate-100 overflow-hidden">
@@ -2158,16 +2157,16 @@
         <div class="grid gap-3 sm:grid-cols-3">
           <div class="rounded-2xl bg-brand-900 text-white p-4">
             <div class="text-[10.5px] uppercase tracking-[0.14em] text-brand-300 font-semibold">Saldo no início do mês</div>
-            <div class="mt-2 text-[24px] font-extrabold num leading-none">{{ flowStartFmt }}</div>
+            <div class="mt-2 text-[24px] font-extrabold num leading-none [overflow-wrap:anywhere]">{{ flowStartFmt }}</div>
           </div>
           <div class="rounded-2xl bg-white border border-black/5 p-4">
             <div class="text-[10.5px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Menor saldo previsto</div>
-            <div class="mt-2 text-[24px] font-extrabold num leading-none {{ flowMinClass }}">{{ flowMinFmt }}</div>
+            <div class="mt-2 text-[24px] font-extrabold num leading-none {{ flowMinClass }} [overflow-wrap:anywhere]">{{ flowMinFmt }}</div>
             <div class="mt-1 text-[11.5px] text-slate-400">{{ flowMinDayLabel }}</div>
           </div>
           <div class="rounded-2xl bg-white border border-black/5 p-4">
             <div class="text-[10.5px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Saldo no fim do mês</div>
-            <div class="mt-2 text-[24px] font-extrabold num leading-none {{ flowEndClass }}">{{ flowEndFmt }}</div>
+            <div class="mt-2 text-[24px] font-extrabold num leading-none {{ flowEndClass }} [overflow-wrap:anywhere]">{{ flowEndFmt }}</div>
           </div>
         </div>
 
@@ -2219,12 +2218,15 @@
       </sc-if>
 
       <sc-if value="{{ isAccounts }}" hint-placeholder-val="{{ false }}">
-        <div class="flex items-center justify-between">
-          <div>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="min-w-0">
             <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Saldo somado</div>
-            <div class="text-[26px] font-extrabold num">{{ totalBalance }}</div>
+            <div class="text-[26px] font-extrabold num [overflow-wrap:anywhere]">{{ totalBalance }}</div>
+            <sc-if value="{{ hasExcludedAccs }}" hint-placeholder-val="{{ false }}">
+              <div class="text-[11px] text-slate-400 leading-snug">{{ excludedNote }}</div>
+            </sc-if>
           </div>
-          <button onClick="{{ openNewAccount }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2"><i class="fa-solid fa-plus text-xs"></i>Nova conta</button>
+          <button onClick="{{ openNewAccount }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2 shrink-0 whitespace-nowrap"><i class="fa-solid fa-plus text-xs"></i>Nova conta</button>
         </div>
         <div class="mt-5 grid gap-3 sm:grid-cols-2">
           <sc-for list="{{ accountsView }}" as="a" hint-placeholder-count="2">
@@ -2234,29 +2236,31 @@
                 <div class="min-w-0">
                   <div class="text-[14px] font-bold truncate">{{ a.name }}</div>
                   <div class="text-[11.5px] text-slate-400">{{ a.txCountLabel }}</div>
+                  <span class="mt-1 inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-semibold {{ a.saldoTagClass }}"><i class="fa-solid {{ a.saldoTagIcon }} text-[9px]"></i>{{ a.saldoTag }}</span>
                 </div>
                 <div class="ml-auto flex gap-1">
                   <button onClick="{{ a.edit }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-400 active:bg-slate-100"><i class="fa-solid fa-pen text-xs"></i></button>
                   <button onClick="{{ a.del }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-300 active:text-rose-500 active:bg-rose-50"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
               </div>
-              <div class="mt-4 text-[24px] font-extrabold num {{ a.balanceClass }}">{{ a.balanceFmt }}</div>
+              <div class="mt-4 text-[24px] font-extrabold num {{ a.balanceClass }} [overflow-wrap:anywhere]">{{ a.balanceFmt }}</div>
               <sc-if value="{{ a.isForeign }}" hint-placeholder-val="{{ false }}">
                 <div class="mt-0.5 text-[12px] font-semibold text-slate-500 num">{{ a.brlLine }}</div>
               </sc-if>
               <div class="mt-1 text-[11.5px] text-slate-400">Saldo inicial {{ a.initialFmt }}</div>
+              <button onClick="{{ a.statement }}" class="mt-3 w-full h-11 rounded-xl bg-slate-50 text-[12.5px] font-semibold text-brand-600 flex items-center justify-center gap-2 active:bg-slate-100"><i class="fa-solid fa-receipt text-[12px]"></i>Ver extrato</button>
             </div>
           </sc-for>
         </div>
       </sc-if>
 
       <sc-if value="{{ isCards }}" hint-placeholder-val="{{ false }}">
-        <div class="flex items-center justify-between">
-          <div>
+        <div class="flex flex-wrap items-end justify-between gap-3">
+          <div class="min-w-0">
             <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Faturas abertas (total)</div>
-            <div class="text-[26px] font-extrabold num text-orange-600">{{ openInvoicesAll }}</div>
+            <div class="text-[26px] font-extrabold num text-orange-600 [overflow-wrap:anywhere]">{{ openInvoicesAll }}</div>
           </div>
-          <button onClick="{{ openNewCard }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2"><i class="fa-solid fa-plus text-xs"></i>Novo cartão</button>
+          <button onClick="{{ openNewCard }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2 shrink-0 whitespace-nowrap"><i class="fa-solid fa-plus text-xs"></i>Novo cartão</button>
         </div>
 
         <div class="{{ cardRowClass }}">
@@ -2270,7 +2274,7 @@
                 <i class="fa-regular fa-credit-card" style="color:{{ c.fgFaint }}"></i>
               </div>
               <div class="mt-4 text-left">
-                <div class="text-[26px] font-extrabold num leading-none" style="color:{{ c.fg }}">{{ c.invoiceTotalFmt }}</div>
+                <div class="{{ c.valueSize }} font-extrabold num leading-none [overflow-wrap:anywhere]" style="color:{{ c.fg }}">{{ c.invoiceTotalFmt }}</div>
                 <div class="mt-1 text-[11px]" style="color:{{ c.fgMuted }}">{{ c.invoiceStatus }}</div>
               </div>
               <div class="mt-4">
@@ -2359,60 +2363,48 @@
 
       <sc-if value="{{ isPlanning }}" hint-placeholder-val="{{ false }}">
         <div class="rounded-2xl bg-white border border-black/5 p-5">
-          <div class="flex flex-col gap-3">
-            <div>
-              <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Orçamento do mês</div>
-              <div class="text-[26px] font-extrabold num">{{ budgetTotalFmt }}</div>
+          <div class="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold"><i class="fa-solid fa-bullseye"></i>Orçamento do mês</div>
+          <div class="mt-2.5 grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl">
+            <button onClick="{{ setPlanAccrual }}" class="{{ planAccrualClass }}">Competência</button>
+            <button onClick="{{ setPlanCash }}" class="{{ planCashClass }}">Caixa</button>
+          </div>
+          <div class="mt-3 flex flex-col gap-1.5 sm:grid sm:grid-cols-3 sm:gap-3">
+            <div class="min-w-0 flex items-baseline justify-between gap-3 sm:block">
+              <div class="text-[10.5px] uppercase tracking-[0.1em] text-slate-400 font-semibold shrink-0">Orçamento</div>
+              <div class="text-[17px] sm:text-[18px] lg:text-[22px] leading-tight font-extrabold num text-right sm:text-left [overflow-wrap:anywhere] ">{{ budgetTotalFmt }}</div>
             </div>
-            <div>
-              <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Gasto</div>
-              <div class="text-[26px] font-extrabold num text-rose-600">{{ budgetSpentFmt }}</div>
+            <div class="min-w-0 flex items-baseline justify-between gap-3 sm:block">
+              <div class="text-[10.5px] uppercase tracking-[0.1em] text-slate-400 font-semibold shrink-0">Gasto</div>
+              <div class="text-[17px] sm:text-[18px] lg:text-[22px] leading-tight font-extrabold num text-right sm:text-left [overflow-wrap:anywhere] text-rose-600">{{ budgetSpentFmt }}</div>
             </div>
-            <div>
-              <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Disponível</div>
-              <div class="text-[26px] font-extrabold num {{ budgetLeftClass }}">{{ budgetLeftFmt }}</div>
+            <div class="min-w-0 flex items-baseline justify-between gap-3 sm:block">
+              <div class="text-[10.5px] uppercase tracking-[0.1em] text-slate-400 font-semibold shrink-0">Disponível</div>
+              <div class="text-[17px] sm:text-[18px] lg:text-[22px] leading-tight font-extrabold num text-right sm:text-left [overflow-wrap:anywhere] {{ budgetLeftClass }}">{{ budgetLeftFmt }}</div>
             </div>
           </div>
+          <div class="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div class="h-full rounded-full" style="width:{{ budgetUsedPct }};background:{{ budgetUsedColor }}"></div>
+          </div>
+          <div class="mt-2 text-[12px] text-slate-400">Usado: <span class="font-semibold num" style="color:{{ budgetUsedColor }}">{{ budgetUsedLabel }}</span></div>
           <sc-if value="{{ hasBudgetOutsideNote }}" hint-placeholder-val="{{ false }}">
-            <p class="mt-3 text-[11.5px] text-slate-400">{{ budgetOutsideNote }}</p>
+            <p class="mt-1.5 text-[11px] text-slate-400 leading-relaxed">{{ budgetOutsideNote }}</p>
           </sc-if>
-          <div class="mt-4 pt-4 border-t border-black/5 flex justify-center">
-            <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-xl w-full max-w-[320px]">
-              <button onClick="{{ setPlanAccrual }}" class="{{ planAccrualClass }}">Competência</button>
-              <button onClick="{{ setPlanCash }}" class="{{ planCashClass }}">Caixa</button>
-            </div>
-          </div>
-          <div class="mt-4 rounded-2xl bg-slate-50 p-4 flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Base para %</span>
-              <div class="grid grid-cols-2 gap-1 p-1 bg-slate-200/70 rounded-xl w-[112px]">
-                <button onClick="{{ setBudgetModeValue }}" class="{{ budgetModeValueClass }}">R$</button>
-                <button onClick="{{ setBudgetModePct }}" class="{{ budgetModePctClass }}">%</button>
-              </div>
-            </div>
-            <input onInput="{{ onBudgetBase }}" value="{{ budgetBaseText }}" inputmode="numeric" placeholder="R$ 0,00" class="w-full h-12 rounded-xl border-slate-200 bg-white text-[18px] text-right num font-bold placeholder:text-slate-300" />
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-[11.5px] text-slate-500 num min-w-0">{{ budgetShareLabel }} {{ budgetBaseNote }}</span>
-              <button onClick="{{ useBudgetIncome }}" class="h-9 px-3 rounded-lg bg-white border border-black/5 text-[12px] font-semibold text-brand-600 shrink-0">Usar receitas</button>
-            </div>
-          </div>
         </div>
         <div class="mt-4 flex flex-col gap-3">
           <sc-for list="{{ budgetsView }}" as="b" hint-placeholder-count="6">
             <div class="rounded-2xl bg-white border border-black/5 p-4 sm:p-5">
-              <div class="flex items-center gap-3">
-                <button onClick="{{ b.open }}" class="flex items-center gap-3 min-w-0 flex-1 text-left active:opacity-60">
+              <div class="flex flex-wrap items-center gap-3">
+                <button onClick="{{ b.open }}" class="flex items-center gap-3 min-w-0 flex-1 basis-[44%] text-left active:opacity-60">
                   <div class="w-9 h-9 rounded-xl grid place-items-center shrink-0" style="background:{{ b.tint }}"><i class="fa-solid {{ b.icon }} text-[13px]" style="color:{{ b.color }}"></i></div>
                   <div class="min-w-0">
                     <div class="text-[13.5px] font-bold truncate">{{ b.name }} <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i></div>
-                    <div class="text-[11.5px] text-slate-400 num">{{ b.statusLabel }}</div>
-                    <div class="text-[11px] text-slate-400 num">{{ b.shareLabel }}</div>
+                    <div class="text-[11.5px] text-slate-400 num [overflow-wrap:anywhere]">{{ b.statusLabel }}</div>
                     <div class="text-[11px] font-semibold text-amber-700 num">{{ b.instLabel }}</div>
                   </div>
                 </button>
                 <div class="ml-auto flex items-center gap-2 shrink-0">
                   <span class="text-[11px] text-slate-400 hidden sm:inline">Limite</span>
-                  <input onInput="{{ b.onBudget }}" value="{{ b.budgetText }}" inputmode="numeric" class="w-32 h-11 rounded-xl border-slate-200 text-[13px] text-right num font-semibold" />
+                  <input onInput="{{ b.onBudget }}" value="{{ b.budgetText }}" inputmode="numeric" aria-label="Limite" style="width:{{ b.inputW }}" class="max-w-full h-11 px-3 rounded-xl border-slate-200 text-[13px] text-right num font-semibold" />
                 </div>
               </div>
               <div class="mt-3 flex items-center gap-3">
@@ -2430,10 +2422,10 @@
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0">
             <div class="text-[11px] uppercase tracking-[0.14em] text-slate-400 font-semibold">Assinaturas em {{ subsMonthLabel }}</div>
-            <div class="text-[26px] font-extrabold num leading-tight">{{ subsTotalFmt }}</div>
+            <div class="text-[26px] font-extrabold num leading-tight [overflow-wrap:anywhere]">{{ subsTotalFmt }}</div>
             <div class="text-[11.5px] text-slate-400">{{ subsCountLabel }}</div>
           </div>
-          <button onClick="{{ openNewSub }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2 shrink-0"><i class="fa-solid fa-plus text-xs"></i>Nova</button>
+          <button onClick="{{ openNewSub }}" class="h-11 px-4 rounded-xl bg-brand-600 text-white text-[13px] font-semibold flex items-center gap-2 shrink-0 whitespace-nowrap"><i class="fa-solid fa-plus text-xs"></i>Nova</button>
         </div>
         <sc-if value="{{ hasSubs }}" hint-placeholder-val="{{ true }}">
           <div class="mt-4 flex flex-col gap-3">
@@ -2442,9 +2434,9 @@
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-xl grid place-items-center shrink-0" style="background:{{ sub.tint }}"><i class="fa-solid {{ sub.icon }} text-[14px]" style="color:{{ sub.color }}"></i></div>
                   <div class="min-w-0 flex-1">
-                    <div class="flex items-baseline gap-2">
-                      <span class="text-[14px] font-bold truncate">{{ sub.desc }}</span>
-                      <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md {{ sub.statusClass }}">{{ sub.statusLabel }}</span>
+                    <div class="flex flex-wrap items-baseline gap-x-2">
+                      <span class="text-[14px] font-bold truncate min-w-0 basis-[40%] grow-0">{{ sub.desc }}</span>
+                      <span class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md shrink-0 {{ sub.statusClass }}">{{ sub.statusLabel }}</span>
                       <span class="ml-auto text-[14px] font-extrabold num shrink-0">{{ sub.amountFmt }}</span>
                     </div>
                     <div class="text-[11.5px] text-slate-400 truncate">{{ sub.meta }} · {{ sub.periodLabel }}</div>
@@ -2545,8 +2537,10 @@
               <sc-for list="{{ expenseCats }}" as="c" hint-placeholder-count="6">
                 <li class="flex items-center gap-3 px-5 py-3">
                   <div class="w-9 h-9 rounded-xl grid place-items-center" style="background:{{ c.tint }}"><i class="fa-solid {{ c.icon }} text-[13px]" style="color:{{ c.color }}"></i></div>
-                  <span class="text-[13.5px] font-semibold truncate">{{ c.name }}</span>
-                  <span class="ml-auto text-[12px] num text-slate-400">{{ c.monthTotalFmt }}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-[13.5px] font-semibold truncate">{{ c.name }}</div>
+                    <div class="text-[12px] num text-slate-400 [overflow-wrap:anywhere]">{{ c.monthTotalFmt }} no mês</div>
+                  </div>
                   <button onClick="{{ c.edit }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-400 active:bg-slate-100"><i class="fa-solid fa-pen text-xs"></i></button>
                   <button onClick="{{ c.del }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-300 active:text-rose-500 active:bg-rose-50"><i class="fa-solid fa-trash text-xs"></i></button>
                 </li>
@@ -2562,8 +2556,10 @@
               <sc-for list="{{ incomeCats }}" as="c" hint-placeholder-count="2">
                 <li class="flex items-center gap-3 px-5 py-3">
                   <div class="w-9 h-9 rounded-xl grid place-items-center" style="background:{{ c.tint }}"><i class="fa-solid {{ c.icon }} text-[13px]" style="color:{{ c.color }}"></i></div>
-                  <span class="text-[13.5px] font-semibold truncate">{{ c.name }}</span>
-                  <span class="ml-auto text-[12px] num text-slate-400">{{ c.monthTotalFmt }}</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-[13.5px] font-semibold truncate">{{ c.name }}</div>
+                    <div class="text-[12px] num text-slate-400 [overflow-wrap:anywhere]">{{ c.monthTotalFmt }} no mês</div>
+                  </div>
                   <button onClick="{{ c.edit }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-400 active:bg-slate-100"><i class="fa-solid fa-pen text-xs"></i></button>
                   <button onClick="{{ c.del }}" class="w-10 h-10 rounded-xl grid place-items-center text-slate-300 active:text-rose-500 active:bg-rose-50"><i class="fa-solid fa-trash text-xs"></i></button>
                 </li>
@@ -2603,6 +2599,7 @@
           </sc-for>
         </div>
         <div class="mt-4 px-1 text-[11.5px] text-slate-500">Último backup: <span class="font-semibold {{ lastBackupClass }}">{{ lastBackupLabel }}</span></div>
+        <div class="mt-0.5 px-1 text-[11.5px] text-slate-400">{{ storageLabel }}</div>
         <div class="mt-2 grid grid-cols-2 gap-2">
           <button onClick="{{ exportBackup }}" class="h-12 rounded-2xl bg-brand-600 text-white text-[12.5px] font-bold flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i>Baixar backup</button>
           <button onClick="{{ pickBackup }}" class="h-12 rounded-2xl bg-brand-50 text-brand-600 text-[12.5px] font-bold flex items-center justify-center gap-2"><i class="fa-solid fa-upload"></i>Restaurar</button>
@@ -2618,11 +2615,70 @@
   <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
     <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div onClick="{{ closeModal }}" class="absolute inset-0 bg-ink/50 backdrop-blur-sm"></div>
-      <div class="relative w-full sm:max-w-md max-h-[90vh] overflow-y-auto overscroll-contain bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6" style="padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px))">
+      <div class="relative w-full {{ modalWidth }} max-h-[90vh] overflow-y-auto overscroll-contain bg-white rounded-t-3xl sm:rounded-3xl p-5 sm:p-6" style="padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px))">
         <div class="flex items-center gap-3 mb-5">
           <h3 class="text-[16px] font-extrabold">{{ modalTitle }}</h3>
           <button onClick="{{ closeModal }}" class="ml-auto w-9 h-9 rounded-xl bg-slate-100 grid place-items-center text-slate-500"><i class="fa-solid fa-xmark"></i></button>
         </div>
+
+        <sc-if value="{{ isStatementModal }}" hint-placeholder-val="{{ false }}">
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap gap-1.5">
+              <sc-for list="{{ stPeriods }}" as="pp" hint-placeholder-count="5">
+                <button onClick="{{ pp.pick }}" class="{{ pp.class }}">{{ pp.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ stIsCustom }}" hint-placeholder-val="{{ false }}">
+              <div class="grid grid-cols-2 gap-2">
+                <label class="block">
+                  <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">De</span>
+                  <input onChange="{{ onStFrom }}" value="{{ stFrom }}" type="date" class="mt-1 w-full h-11 rounded-xl border-slate-200 text-[13.5px]" />
+                </label>
+                <label class="block">
+                  <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Até</span>
+                  <input onChange="{{ onStTo }}" value="{{ stTo }}" type="date" class="mt-1 w-full h-11 rounded-xl border-slate-200 text-[13.5px]" />
+                </label>
+              </div>
+            </sc-if>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="rounded-xl bg-slate-50 p-3 min-w-0">
+                <div class="text-[10.5px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Saldo em {{ stFromFmt }}</div>
+                <div class="text-[14px] sm:text-[16px] font-extrabold num [overflow-wrap:anywhere]">{{ stOpeningFmt }}</div>
+              </div>
+              <div class="rounded-xl bg-slate-50 p-3 min-w-0">
+                <div class="text-[10.5px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Saldo em {{ stToFmt }}</div>
+                <div class="text-[14px] sm:text-[16px] font-extrabold num [overflow-wrap:anywhere] {{ stClosingClass }}">{{ stClosingFmt }}</div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px] px-1">
+              <span class="text-emerald-600 font-semibold num whitespace-nowrap">{{ stInFmt }}</span>
+              <span class="text-rose-600 font-semibold num whitespace-nowrap">{{ stOutFmt }}</span>
+              <span class="ml-auto text-slate-400">{{ stCountLabel }}</span>
+            </div>
+            <sc-if value="{{ stHasRows }}" hint-placeholder-val="{{ true }}">
+              <ul class="divide-y divide-black/5 border-t border-black/5">
+                <sc-for list="{{ stRows }}" as="r" hint-placeholder-count="6">
+                  <li class="py-2.5 flex items-start gap-3">
+                    <div class="w-12 shrink-0 text-[11.5px] text-slate-400 num pt-0.5">{{ r.dateFmt }}</div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-[13.5px] font-semibold truncate">{{ r.desc }}</div>
+                      <div class="text-[11.5px] text-slate-400 truncate">{{ r.meta }}</div>
+                    </div>
+                    <div class="text-right shrink-0">
+                      <div class="text-[13.5px] font-bold num {{ r.amountClass }}">{{ r.amountFmt }}</div>
+                      <div class="text-[11px] text-slate-400 num">saldo {{ r.balanceFmt }}</div>
+                    </div>
+                  </li>
+                </sc-for>
+              </ul>
+            </sc-if>
+            <sc-if value="{{ stNoRows }}" hint-placeholder-val="{{ false }}">
+              <p class="text-[12.5px] text-slate-400 text-center py-6">Nenhuma movimentação efetivada neste período.</p>
+            </sc-if>
+            <p class="text-[11px] text-slate-400 leading-relaxed">{{ stNote }}</p>
+            <button onClick="{{ exportStatementCSV }}" class="h-12 rounded-2xl bg-brand-600 text-white text-[13.5px] font-bold flex items-center justify-center gap-2"><i class="fa-solid fa-file-excel"></i>Exportar período (Excel/CSV)</button>
+          </div>
+        </sc-if>
 
         <sc-if value="{{ isSearchModal }}" hint-placeholder-val="{{ false }}">
           <div class="flex flex-col gap-3">
@@ -2641,9 +2697,9 @@
                     <button onClick="{{ t.edit }}" class="w-full flex items-center gap-3 py-2.5 text-left active:opacity-60">
                       <div class="w-9 h-9 rounded-xl grid place-items-center shrink-0" style="background:{{ t.tint }}"><i class="fa-solid {{ t.icon }} text-[13px]" style="color:{{ t.color }}"></i></div>
                       <div class="min-w-0 flex-1">
-                        <div class="flex items-baseline gap-3">
-                          <span class="text-[13.5px] font-semibold min-w-0 flex-1 truncate">{{ t.desc }}</span>
-                          <span class="text-[13.5px] font-bold num shrink-0 {{ t.amountClass }}">{{ t.amountFmt }}</span>
+                        <div class="flex flex-wrap items-baseline gap-x-3">
+                          <span class="text-[13.5px] font-semibold min-w-0 flex-1 basis-[45%] truncate">{{ t.desc }}</span>
+                          <span class="text-[13.5px] font-bold num shrink-0 ml-auto {{ t.amountClass }}">{{ t.amountFmt }}</span>
                         </div>
                         <div class="flex items-baseline gap-2 text-[11.5px] text-slate-400">
                           <span class="min-w-0 flex-1 truncate">{{ t.meta }}</span>
@@ -2668,7 +2724,7 @@
             </div>
             <div>
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Valor</span>
-              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold {{ amountColorClass }}" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold {{ amountColorClass }} [overflow-wrap:anywhere]" />
               <div class="mt-2 flex items-center gap-1.5">
                 <sc-for list="{{ calcOps }}" as="op" hint-placeholder-count="4">
                   <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
@@ -2809,7 +2865,7 @@
             <div class="grid grid-cols-2 gap-3">
               <label class="block">
                 <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Moeda</span>
-                <select onChange="{{ onCurrency }}" value="{{ form.currency }}" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[13.5px]">
+                <select onChange="{{ onCurrency }}" value="{{ currencySelectValue }}" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[13.5px]">
                   <sc-for list="{{ currencyOptions }}" as="c" hint-placeholder-count="4">
                     <option value="{{ c.value }}">{{ c.label }}</option>
                   </sc-for>
@@ -2818,10 +2874,19 @@
               <sc-if value="{{ accountIsForeign }}" hint-placeholder-val="{{ false }}">
                 <label class="block">
                   <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">{{ rateFieldLabel }}</span>
-                  <input onInput="{{ onRate }}" value="{{ form.rateText }}" inputmode="decimal" placeholder="5,25" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[15px] font-bold num text-right placeholder:text-slate-300" />
+                  <input onInput="{{ onRate }}" value="{{ form.rateText }}" inputmode="decimal" placeholder="R$ por 1" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[15px] font-bold num text-right placeholder:text-slate-300" />
                 </label>
               </sc-if>
             </div>
+            <sc-if value="{{ curOther }}" hint-placeholder-val="{{ false }}">
+              <div class="-mt-1 rounded-xl bg-slate-50 p-3 flex flex-col gap-2">
+                <label class="block">
+                  <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Sigla da moeda (3 letras)</span>
+                  <input onInput="{{ onCurCode }}" value="{{ form.currency }}" maxlength="3" autocapitalize="characters" autocomplete="off" placeholder="Ex.: COP, PEN, THB" class="mt-1 w-full h-12 rounded-xl border-slate-200 bg-white text-[16px] font-bold uppercase tracking-[0.12em]" />
+                </label>
+                <p class="text-[11.5px] leading-relaxed {{ curCodeClass }}">{{ curCodeHint }}</p>
+              </div>
+            </sc-if>
             <sc-if value="{{ accountIsForeign }}" hint-placeholder-val="{{ false }}">
               <p class="-mt-2 text-[11.5px] text-slate-400 leading-relaxed">Pode deixar em branco: o custo médio nasce na sua primeira conversão e vale também para o que veio antes dela. Saldo inicial e recebimentos na moeda não alteram o custo médio.</p>
             </sc-if>
@@ -2839,6 +2904,13 @@
               <input onChange="{{ onInitialDate }}" value="{{ form.initialDate }}" type="date" class="mt-1 w-full h-12 rounded-xl border-slate-200 text-[14px]" />
               <p class="mt-1.5 text-[11.5px] text-slate-400 leading-relaxed">{{ initialDateHint }}</p>
             </div>
+            <label class="flex items-start gap-2.5 rounded-xl bg-slate-50 p-3">
+              <input onChange="{{ onInTotal }}" checked="{{ formInTotal }}" type="checkbox" class="mt-0.5 w-5 h-5 rounded-md border-slate-300 text-brand-600 shrink-0" />
+              <span class="min-w-0">
+                <span class="block text-[13px] font-semibold text-slate-700">Somar no saldo das contas</span>
+                <span class="block text-[11.5px] text-slate-500 leading-snug">Desmarque para dinheiro que não dá para usar no dia a dia (ex.: conta em dólar). A conta continua com saldo e extrato, mas fica fora do saldo do Início, do total da aba Contas e do Fluxo diário.</span>
+              </span>
+            </label>
             <div>
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Cor</span>
               <div class="mt-2 flex flex-wrap gap-2">
@@ -2940,7 +3012,7 @@
             </label>
             <div>
               <span class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Valor mensal</span>
-              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold text-rose-600" />
+              <input onInput="{{ onAmount }}" onBlur="{{ onAmountBlur }}" value="{{ amountDisplay }}" inputmode="decimal" autocomplete="off" placeholder="{{ amountPlaceholder }}" class="mt-1 w-full h-14 rounded-2xl border-slate-200 text-[24px] font-extrabold num text-right placeholder:text-slate-300 placeholder:font-semibold text-rose-600 [overflow-wrap:anywhere]" />
               <div class="mt-2 flex items-center gap-1.5">
                 <sc-for list="{{ calcOps }}" as="op" hint-placeholder-count="4">
                   <button onPointerDown="{{ keepFocus }}" onMouseDown="{{ keepFocus }}" onClick="{{ op.press }}" class="w-11 h-10 rounded-xl bg-slate-100 text-[16px] font-bold text-slate-600 active:bg-slate-200">{{ op.label }}</button>
@@ -3010,7 +3082,7 @@
           <div class="flex flex-col gap-3">
             <div class="rounded-2xl bg-slate-50 p-4">
               <div class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Saldo projetado no dia</div>
-              <div class="text-[26px] font-extrabold num mt-1" style="color:{{ dayColor }}">{{ dayBalanceFmt }}</div>
+              <div class="text-[26px] font-extrabold num mt-1 [overflow-wrap:anywhere]" style="color:{{ dayColor }}">{{ dayBalanceFmt }}</div>
               <div class="text-[11.5px] text-slate-400 num">{{ dayFlowLabel }}</div>
             </div>
             <sc-if value="{{ hasDayEvents }}" hint-placeholder-val="{{ true }}">
@@ -3034,7 +3106,7 @@
           <div class="flex flex-col gap-3">
             <div class="rounded-2xl bg-slate-50 p-4">
               <div class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">{{ detailCountLabel }}</div>
-              <div class="text-[26px] font-extrabold num mt-1">{{ detailTotalFmt }}</div>
+              <div class="text-[26px] font-extrabold num mt-1 [overflow-wrap:anywhere]">{{ detailTotalFmt }}</div>
               <sc-if value="{{ hasDetailBudget }}" hint-placeholder-val="{{ false }}">
                 <div class="mt-3 pt-3 border-t border-black/5 grid grid-cols-3 gap-2">
                   <div class="min-w-0">
@@ -3060,9 +3132,9 @@
                     <button onClick="{{ t.edit }}" class="flex items-center gap-3 min-w-0 flex-1 text-left active:opacity-60">
                       <div class="w-9 h-9 rounded-xl grid place-items-center shrink-0" style="background:{{ t.tint }}"><i class="fa-solid {{ t.icon }} text-[13px]" style="color:{{ t.color }}"></i></div>
                       <div class="min-w-0 flex-1">
-                        <div class="flex items-baseline gap-3">
-                          <span class="text-[13.5px] font-semibold min-w-0 flex-1 truncate">{{ t.desc }}</span>
-                          <span class="text-[13.5px] font-bold num shrink-0 {{ t.amountClass }}">{{ t.amountFmt }}</span>
+                        <div class="flex flex-wrap items-baseline gap-x-3">
+                          <span class="text-[13.5px] font-semibold min-w-0 flex-1 basis-[45%] truncate">{{ t.desc }}</span>
+                          <span class="text-[13.5px] font-bold num shrink-0 ml-auto {{ t.amountClass }}">{{ t.amountFmt }}</span>
                         </div>
                         <div class="flex items-baseline gap-2 text-[11.5px] text-slate-400">
                           <span class="min-w-0 flex-1 truncate">{{ t.meta }}</span>
@@ -3085,7 +3157,7 @@
           <div class="flex flex-col gap-4">
             <div class="rounded-2xl bg-slate-50 p-4">
               <div class="text-[11px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Fatura {{ selCard.invoiceMonthLabel }}</div>
-              <div class="text-[26px] font-extrabold num mt-1">{{ invoiceRestFmt }}</div>
+              <div class="text-[26px] font-extrabold num mt-1 [overflow-wrap:anywhere]">{{ invoiceRestFmt }}</div>
               <div class="text-[11.5px] text-slate-400 num">{{ invoiceRestNote }}</div>
             </div>
             <label class="block">
@@ -3246,6 +3318,7 @@ class Component extends DCLogic {
     try {
       const raw = localStorage.getItem('meubolso-v1');
       if (!raw) return null;
+      this._savedChars = raw.length;
       const d = JSON.parse(raw);
       return {
         accounts: d.accounts || [], cards: d.cards || [], categories: d.categories || [],
@@ -3255,12 +3328,19 @@ class Component extends DCLogic {
   }
   save() {
     const s = this.state;
+    const json = JSON.stringify({
+      accounts: s.accounts, cards: s.cards, categories: s.categories,
+      transactions: s.transactions, payments: s.payments, budgets: s.budgets, subs: s.subs
+    });
+    this._savedChars = json.length;
     try {
-      localStorage.setItem(this.KEY, JSON.stringify({
-        accounts: s.accounts, cards: s.cards, categories: s.categories,
-        transactions: s.transactions, payments: s.payments, budgets: s.budgets, subs: s.subs
-      }));
-    } catch (e) {}
+      localStorage.setItem(this.KEY, json);
+      this._saveFailed = false;
+    } catch (e) {
+      // antes o erro era ignorado em silêncio: se o espaço do navegador acabar, o usuário precisa saber
+      if (!this._saveFailed) this.toast('Não consegui salvar neste aparelho (espaço do navegador cheio?). Baixe um backup agora.');
+      this._saveFailed = true;
+    }
   }
   up(patch) {
     this.setState(st => {
@@ -3411,7 +3491,9 @@ class Component extends DCLogic {
   // número no padrão brasileiro, sem símbolo de moeda (campo de valor)
   // arredonda para centavos e elimina resíduos de soma (-0,0000000000008 -> 0)
   r2(v) { const n = Math.round((Number(v) || 0) * 100) / 100; return Math.abs(n) < 0.005 ? 0 : n; }
-  fmtNum(v) { return this.r2(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  // formatadores reaproveitados: criar um a cada número (toLocaleString) era o que mais pesava ao trocar de aba
+  nf(key, opts) { const c = this._nf || (this._nf = {}); return c[key] || (c[key] = new Intl.NumberFormat('pt-BR', opts)); }
+  fmtNum(v) { return this.nf('num2', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(this.r2(v)); }
   // "1.234,56" / "12,5" / "-50" / "12.5" -> número; vazio -> null
   parseNum(txt) {
     let t = String(txt || '').replace(/\s/g, '');
@@ -3420,14 +3502,15 @@ class Component extends DCLogic {
     const v = Number(t);
     return isFinite(v) ? Math.round(v * 100) / 100 : null;
   }
-  fmt(v) { return this.r2(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  fmt(v) { return this.nf('BRL', { style: 'currency', currency: 'BRL' }).format(this.r2(v)); }
   money(v) { return this.state.privacy ? 'R$ ••••' : this.fmt(v); }
   // negativo com sinal separado ("- R$ 50,00"), nunca "-R$" colado
   moneyS(v) { const n = Number(v) || 0; return n < -0.004 ? '- ' + this.money(-n) : this.money(Math.abs(n) < 0.005 ? 0 : n); }
   fmtC(v, cur) {
     cur = cur || 'BRL';
     const n = this.r2(v);
-    try { return n.toLocaleString('pt-BR', { style: 'currency', currency: cur }); }
+    // sempre 2 casas, inclusive em moedas que o navegador mostraria sem centavos (COP, JPY, CLP), para bater com o que foi digitado
+    try { return this.nf(cur, { style: 'currency', currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n); }
     catch (e) { return cur + ' ' + n.toFixed(2); }
   }
   moneyC(v, cur) {
@@ -3440,6 +3523,14 @@ class Component extends DCLogic {
     if (!a) return 'Conta';
     return a.name + ' · ' + (a.currency || 'BRL');
   }
+  // nome da moeda em português a partir da sigla (ex.: COP -> peso colombiano); vazio se o navegador não conhecer
+  curName(code) {
+    try {
+      if (typeof Intl.supportedValuesOf === 'function' && Intl.supportedValuesOf('currency').indexOf(code) < 0) return '';
+      const n = new Intl.DisplayNames(['pt-BR'], { type: 'currency' }).of(code);
+      return n && n !== code ? n.charAt(0).toUpperCase() + n.slice(1) : '';
+    } catch (e) { return ''; }
+  }
   accCur(id) { const a = this.account(id); return (a && a.currency) || 'BRL'; }
   accRate(id) { const a = this.account(id); return a && a.currency && a.currency !== 'BRL' ? (Number(a.avgRate) || Number(a.rate) || 0) : 1; }
   nativeAmt(t) { return t.fx ? t.fx.amount : t.amount; }
@@ -3449,9 +3540,14 @@ class Component extends DCLogic {
     const v = parseFloat(n);
     return isFinite(v) && v > 0 ? v : null;
   }
-  rateLabel(r) { return 'R$ ' + (Number(r) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }); }
+  rateLabel(r) { return 'R$ ' + this.nf('rate', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(Number(r) || 0); }
   ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
-  todayStr() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  todayStr() { return this.localDate(new Date()); }
+  addDays(ymd, n) { const v = ymd.split('-').map(Number); return this.localDate(new Date(v[0], v[1] - 1, v[2] + n)); }
+  // data no fuso do aparelho (o ISO do backup é em UTC: 23/11 às 22h em SP vira "24/11" se cortar o texto)
+  localDate(x) { const d = x instanceof Date ? x : new Date(x); if (isNaN(d)) return ''; return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  // diferença em dias de calendário entre duas datas 'AAAA-MM-DD'
+  dayDiff(a, b) { const p = x => { const v = x.split('-').map(Number); return Date.UTC(v[0], v[1] - 1, v[2]); }; return Math.round((p(b) - p(a)) / 86400000); }
   addMonths(ym, n) {
     const [y, m] = ym.split('-').map(Number);
     const d = new Date(y, m - 1 + n, 1);
@@ -3553,8 +3649,22 @@ class Component extends DCLogic {
   accountBalanceBRL(id) { return this.r2(this.accountBalance(id) * this.accRate(id)); }
   /* bank=true: como o app do banco mostra — assinaturas ainda não cobradas não entram */
   isPostedTx(t) { return !(t.subId && t.date > this.todayStr()); }
+  // totais de fatura por cartão|mês calculados numa passada só e reaproveitados até os lançamentos mudarem
+  invIndex() {
+    const txs = this.state.transactions, today = this.todayStr(), c = this._inv;
+    if (c && c.txs === txs && c.today === today) return c;
+    const all = {}, bank = {};
+    txs.forEach(t => {
+      if (t.pay !== 'card' || !t.cardId) return;
+      const k = t.cardId + '|' + t.invoiceMonth;
+      all[k] = (all[k] || 0) + t.amount;
+      if (this.isPostedTx(t)) bank[k] = (bank[k] || 0) + t.amount;
+    });
+    return (this._inv = { txs: txs, today: today, all: all, bank: bank });
+  }
   invoiceTotal(cardId, ym, bank) {
-    return this.state.transactions.reduce((sum, t) => sum + (t.pay === 'card' && t.cardId === cardId && t.invoiceMonth === ym && (!bank || this.isPostedTx(t)) ? t.amount : 0), 0);
+    const ix = this.invIndex();
+    return (bank ? ix.bank : ix.all)[cardId + '|' + ym] || 0;
   }
   invoicePaid(cardId, ym) { return this.state.payments.find(p => p.cardId === cardId && p.month === ym); }
   invoicePaidTotal(cardId, ym) {
@@ -3565,9 +3675,8 @@ class Component extends DCLogic {
     return Math.abs(r) < 0.005 ? 0 : r;
   }
   cardUsed(cardId) {
-    const months = {};
-    this.state.transactions.forEach(t => { if (t.pay === 'card' && t.cardId === cardId) months[t.invoiceMonth] = true; });
-    return Object.keys(months).reduce((s, m) => s + Math.max(0, this.invoiceRemaining(cardId, m, true)), 0);
+    const pre = cardId + '|', all = this.invIndex().all;
+    return Object.keys(all).reduce((s, k) => s + (k.indexOf(pre) === 0 ? Math.max(0, this.invoiceRemaining(cardId, k.slice(pre.length), true)) : 0), 0);
   }
   monthTx(ym) { return this.state.transactions.filter(t => (t.date || '').slice(0, 7) === ym); }
 
@@ -3578,10 +3687,25 @@ class Component extends DCLogic {
     const start = ym + '-01';
     const pad = d => String(d).padStart(2, '0');
     const WD = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
-    let bal = s.accounts.reduce((a, acc) => a + (!acc.initialDate || acc.initialDate < start ? (Number(acc.initial) || 0) * this.accRate(acc.id) : 0), 0);
+    // contas marcadas "fora do saldo" não entram no fluxo; transferência delas para uma conta do saldo entra como dinheiro novo
+    const inc = {}; s.accounts.forEach(a => { if (!a.excludeFromTotal) inc[a.id] = true; });
+    const incAt = (id, date) => !!inc[id] && this.accOk(id, date);
+    const trDelta = t => {
+      const fi = incAt(t.accountId, t.date), ti = incAt(t.toAccountId, t.date);
+      if (fi === ti) return 0;
+      const fromCur = this.accCur(t.accountId), toCur = this.accCur(t.toAccountId);
+      const v = toCur === 'BRL' ? (t.toAmount != null ? t.toAmount : t.amount) : fromCur === 'BRL' ? t.amount : t.amount * this.accRate(t.accountId);
+      return ti ? v : -v;
+    };
+    let bal = s.accounts.reduce((a, acc) => a + (inc[acc.id] && (!acc.initialDate || acc.initialDate < start) ? (Number(acc.initial) || 0) * this.accRate(acc.id) : 0), 0);
     // lançamentos em conta anteriores ao mês (pendentes incluídos: isto é projeção, não extrato)
+    const byDay = {};
     s.transactions.forEach(t => {
-      if (t.pay === 'account' && t.date < start && t.type !== 'transfer' && this.accOk(t.accountId, t.date)) bal += t.type === 'income' ? t.amount : -t.amount;
+      if (t.pay !== 'account') return;
+      if (t.date < start) {
+        if (t.type === 'transfer') bal += trDelta(t);
+        else if (incAt(t.accountId, t.date)) bal += t.type === 'income' ? t.amount : -t.amount;
+      } else if (t.date.slice(0, 7) === ym) (byDay[t.date] = byDay[t.date] || []).push(t);
     });
     // faturas de meses anteriores ainda não pagas continuam pesando no saldo projetado
     const past = {};
@@ -3592,34 +3716,37 @@ class Component extends DCLogic {
       const cardId = k.slice(0, k.indexOf('|')), m = k.slice(k.indexOf('|') + 1);
       bal -= Math.max(0, this.invoiceRemaining(cardId, m));
     });
-    s.payments.forEach(p => { if (p.date < start && this.accOk(p.accountId, p.date)) bal -= p.amount; });
+    const payByDay = {};
+    s.payments.forEach(p => {
+      if (p.date < start) { if (incAt(p.accountId, p.date)) bal -= p.amount; }
+      else if ((p.date || '').slice(0, 7) === ym) (payByDay[p.date] = payByDay[p.date] || []).push(p);
+    });
     const opening = bal;
     const rows = [];
     for (let d = 1; d <= last; d++) {
       const ds = ym + '-' + pad(d);
       const ev = [];
       s.accounts.forEach(acc => {
-        if (acc.initialDate !== ds || !Number(acc.initial)) return;
+        if (acc.initialDate !== ds || !Number(acc.initial) || !inc[acc.id]) return;
         ev.push({ label: 'Saldo inicial · ' + this.accName(acc), icon: 'fa-flag', color: '#64748b', delta: (Number(acc.initial) || 0) * this.accRate(acc.id) });
       });
-      s.transactions.forEach(t => {
-        if (t.pay !== 'account' || t.date !== ds) return;
-        if (t.type !== 'transfer' && !this.accOk(t.accountId, t.date)) return;
+      (byDay[ds] || []).forEach(t => {
         if (t.type === 'transfer') {
           const from = this.account(t.accountId), to = this.account(t.toAccountId);
-          ev.push({ label: 'Transferência ' + (from ? this.accName(from) : '?') + ' → ' + (to ? this.accName(to) : '?'), icon: 'fa-right-left', color: '#64748b', delta: 0, info: true });
+          const dl = trDelta(t);
+          ev.push({ label: 'Transferência ' + (from ? this.accName(from) : '?') + ' → ' + (to ? this.accName(to) : '?'), icon: 'fa-right-left', color: '#64748b', delta: dl, info: dl === 0 });
           return;
         }
+        if (!incAt(t.accountId, t.date)) return;
         const c = this.cat(t.categoryId);
         ev.push({
           label: t.desc + (t.paid === false ? ' (pendente)' : ''), icon: c.icon, color: c.color,
           delta: t.type === 'income' ? t.amount : -t.amount
         });
       });
-      s.payments.forEach(p => {
-        if (p.date !== ds) return;
-        const c = this.card(p.cardId);
-        ev.push({ label: 'Pagamento fatura ' + (c ? c.name : ''), icon: 'fa-circle-check', color: '#4a45e0', delta: -p.amount });
+      (payByDay[ds] || []).forEach(p => {
+        const c = this.card(p.cardId), fromInc = incAt(p.accountId, p.date);
+        ev.push({ label: 'Pagamento fatura ' + (c ? c.name : '') + (fromInc ? '' : ' (conta fora do saldo)'), icon: 'fa-circle-check', color: '#4a45e0', delta: fromInc ? -p.amount : 0, info: !fromInc });
       });
       s.cards.forEach(c => {
         const due = Math.min(Number(c.dueDay) || 1, last);
@@ -3686,8 +3813,8 @@ class Component extends DCLogic {
       modal: 'account',
       form: acc
         ? { id: acc.id, name: acc.name, amount: acc.initial, amountText: acc.initial ? 'x' : '', icon: acc.icon, color: acc.color, initialDate: acc.initialDate || '',
-            currency: acc.currency || 'BRL', rate: acc.rate || null, rateText: acc.rate ? String(acc.rate).replace('.', ',') : '' }
-        : { name: '', amount: 0, amountText: '', icon: 'fa-building-columns', color: '#4a45e0', currency: 'BRL', rate: null, rateText: '', initialDate: this.todayStr() }
+            currency: acc.currency || 'BRL', rate: acc.rate || null, rateText: acc.rate ? String(acc.rate).replace('.', ',') : '', inTotal: !acc.excludeFromTotal }
+        : { name: '', amount: 0, amountText: '', icon: 'fa-building-columns', color: '#4a45e0', currency: 'BRL', rate: null, rateText: '', initialDate: this.todayStr(), inTotal: true }
     });
   }
   openCard(card) {
@@ -3798,6 +3925,7 @@ class Component extends DCLogic {
     let f = this.state.form;
     if (f.calc) { const v = this.evalExpr(f.calcText); if (v === null) return this.toast('Termine a conta no campo de valor.'); f = Object.assign({}, f, { amount: v }); }
     if (!f.name) return this.toast('Dê um nome à conta.');
+    if (f.curOther && !/^[A-Z]{3}$/.test(f.currency || '')) return this.toast('Digite a sigla da moeda com 3 letras (ex.: COP).');
     const cur = f.currency || 'BRL';
     const rate = cur === 'BRL' ? null : this.parseRate(f.rateText);
     if (f.id) {
@@ -3806,10 +3934,12 @@ class Component extends DCLogic {
       if (used && (old.currency || 'BRL') !== cur) return this.toast('Conta com lançamentos não pode trocar de moeda.');
     }
     const data = { name: f.name, initial: f.amount, icon: f.icon, color: f.color, currency: cur, rate: rate, initialDate: f.initialDate || null };
+    // só grava o campo quando a conta fica FORA do saldo (backups antigos, sem o campo, continuam somando)
+    const withFlag = a => { const o = Object.assign({}, a, data); if (f.inTotal === false) o.excludeFromTotal = true; else delete o.excludeFromTotal; return o; };
     this.up(s => ({
       accounts: f.id
-        ? s.accounts.map(a => a.id === f.id ? Object.assign({}, a, data) : a)
-        : s.accounts.concat([Object.assign({ id: this.uid() }, data)]),
+        ? s.accounts.map(a => a.id === f.id ? withFlag(a) : a)
+        : s.accounts.concat([withFlag({ id: this.uid() })]),
       modal: null, form: {}
     }));
   }
@@ -3997,6 +4127,59 @@ class Component extends DCLogic {
   }
 
   /* ---------- backup / export ---------- */
+  /* extrato de uma conta: só movimentos efetivados, na moeda da conta, com saldo após cada linha
+     (mesmas regras do saldo da conta: saldo inicial, receitas, despesas, transferências e pagamentos de fatura) */
+  accountStatement(id) {
+    const s = this.state, acc = this.account(id);
+    if (!acc) return [];
+    const cur = acc.currency || 'BRL', r = this.accRate(id);
+    const ev = [];
+    if (Number(acc.initial)) ev.push({ date: acc.initialDate || '', ord: -1, desc: 'Saldo inicial', meta: '', amt: Number(acc.initial) || 0 });
+    s.transactions.forEach((t, i) => {
+      if (t.pay !== 'account' || !t.paid || !this.accOk(id, t.date)) return;
+      if (t.type === 'transfer') {
+        if (t.accountId === id) ev.push({ date: t.date, ord: i, desc: t.desc || 'Transferência', meta: 'Para ' + this.accName(t.toAccountId), amt: -t.amount });
+        if (t.toAccountId === id) ev.push({ date: t.date, ord: i, desc: t.desc || 'Transferência', meta: 'De ' + this.accName(t.accountId), amt: t.toAmount != null ? t.toAmount : t.amount });
+        return;
+      }
+      if (t.accountId !== id) return;
+      const v = this.nativeAmt(t), c = this.cat(t.categoryId);
+      ev.push({ date: t.date, ord: i, desc: t.desc || c.name, meta: c.name + (t.fx ? ' · ≈ ' + this.fmt(t.amount) : ''), amt: t.type === 'income' ? v : -v });
+    });
+    s.payments.forEach((p, i) => {
+      if (p.accountId !== id || !this.accOk(id, p.date)) return;
+      const c = this.card(p.cardId);
+      ev.push({ date: p.date || '', ord: 1e6 + i, desc: 'Pagamento fatura ' + (c ? c.name : ''), meta: 'Fatura ' + this.monthName(p.month, false), amt: -p.amount / r });
+    });
+    ev.sort((a, b) => (a.date !== b.date ? (a.date < b.date ? -1 : 1) : a.ord - b.ord));
+    let bal = 0;
+    ev.forEach(e => { bal += e.amt; e.bal = bal; e.cur = cur; });
+    return ev;
+  }
+  statementRange(f) {
+    const today = this.todayStr();
+    const back = n => { const d = new Date(); d.setDate(d.getDate() - n + 1); return this.localDate(d); };
+    if (f.period === 'month') return { from: today.slice(0, 8) + '01', to: today };
+    if (f.period === 'custom') return { from: f.from || back(30), to: f.to || today };
+    return { from: back(Number(f.period) || 30), to: today };
+  }
+  exportStatementCSV() {
+    const f = this.state.form, acc = this.account(f.accountId);
+    if (!acc) return;
+    const rg = this.statementRange(f), all = this.accountStatement(acc.id), cur = acc.currency || 'BRL';
+    const rows = all.filter(e => e.date >= rg.from && e.date <= rg.to);
+    const before = all.filter(e => e.date < rg.from);
+    const opening = before.length ? before[before.length - 1].bal : 0;
+    const dec = v => this.r2(v).toFixed(2).replace('.', ',');
+    const esc = t => '"' + String(t).replace(/"/g, '""') + '"';
+    const lines = [esc('Extrato ' + this.accName(acc) + ' — ' + this.dateFull(rg.from) + ' a ' + this.dateFull(rg.to) + ' (gerado em ' + this.dateFull(this.todayStr()) + ')')];
+    lines.push(['Data', 'Descrição', 'Detalhe', 'Entrada (' + cur + ')', 'Saída (' + cur + ')', 'Saldo (' + cur + ')'].map(esc).join(';'));
+    lines.push([esc(this.dateFull(rg.from)), esc('Saldo anterior'), '""', '""', '""', esc(dec(opening))].join(';'));
+    rows.forEach(e => lines.push([esc(this.dateFull(e.date)), esc(e.desc), esc(e.meta), esc(e.amt > 0 ? dec(e.amt) : ''), esc(e.amt < 0 ? dec(-e.amt) : ''), esc(dec(e.bal))].join(';')));
+    const name = 'extrato-' + acc.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-') + '-' + cur.toLowerCase() + '-' + rg.from + '-a-' + rg.to + '.csv';
+    this.download(name, '\uFEFF' + lines.join('\r\n'), 'text/csv;charset=utf-8');
+    this.toast('Extrato baixado — abre direto no Excel.');
+  }
   download(name, content, mime) {
     const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
@@ -4021,6 +4204,10 @@ class Component extends DCLogic {
     const val = isNum ? this.parseNum(raw) : null;
     const plain = isNum ? raw.replace(/^-/, '').replace(/\./g, '') : '';
     const tokens = this.norm(raw).split(/\s+/).filter(Boolean);
+    // o texto pesquisável de cada lançamento fica guardado; refaz se categorias, contas ou cartões mudarem
+    if (!this._hay || this._hayKey !== s.categories || this._hayAcc !== s.accounts || this._hayCards !== s.cards) {
+      this._hay = new WeakMap(); this._hayKey = s.categories; this._hayAcc = s.accounts; this._hayCards = s.cards;
+    }
     return s.transactions.filter(t => {
       if (isNum) {
         const vals = [Math.abs(Number(t.amount) || 0)];
@@ -4028,16 +4215,21 @@ class Component extends DCLogic {
         if (t.toAmount != null) vals.push(Math.abs(Number(t.toAmount) || 0));
         if (vals.some(v => (val != null && Math.abs(v - Math.abs(val)) < 0.005) || this.fmtNum(v).replace(/\./g, '').indexOf(plain) === 0)) return true;
       }
-      const c = t.type === 'transfer' ? { name: 'transferência' } : this.cat(t.categoryId);
-      const card = t.pay === 'card' ? this.card(t.cardId) : null;
-      const acc = this.account(t.accountId), to = this.account(t.toAccountId);
-      const hay = this.norm([t.desc, c && c.name, card && card.name, acc && this.accName(acc), to && this.accName(to)].join(' '));
+      const cache = this._hay;
+      let hay = cache.get(t);
+      if (hay === undefined) {
+        const c = t.type === 'transfer' ? { name: 'transferência' } : this.cat(t.categoryId);
+        const card = t.pay === 'card' ? this.card(t.cardId) : null;
+        const acc = this.account(t.accountId), to = this.account(t.toAccountId);
+        hay = this.norm([t.desc, c && c.name, card && card.name, acc && this.accName(acc), to && this.accName(to)].join(' '));
+        cache.set(t, hay);
+      }
       return tokens.every(k => hay.indexOf(k) >= 0);
     }).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   }
   exportBackup() {
     const s = this.state;
-    const stamp = new Date().toISOString().slice(0, 10);
+    const stamp = this.todayStr();
     const payload = {
       app: 'meubolso', version: 1, exportedAt: new Date().toISOString(),
       accounts: s.accounts, cards: s.cards, categories: s.categories,
@@ -4056,7 +4248,7 @@ class Component extends DCLogic {
       try {
         const d = JSON.parse(reader.result);
         if (!d || !Array.isArray(d.accounts) || !Array.isArray(d.transactions)) throw new Error('formato');
-        const when = d.exportedAt ? this.dateFull(d.exportedAt.slice(0, 10)) : 'data desconhecida';
+        const when = d.exportedAt ? this.dateFull(this.localDate(d.exportedAt)) : 'data desconhecida';
         this.ask('Restaurar o backup de ' + when + '?\n\n' + d.accounts.length + ' contas e ' + d.transactions.length + ' lançamentos. Os dados atuais deste navegador serão substituídos.', () => {
           try {
             const merged = this.mergeSplitSubs(d.subs || [], d.transactions || []);
@@ -4233,7 +4425,7 @@ class Component extends DCLogic {
         plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11, family: 'Plus Jakarta Sans' } } } },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 10.5 } } },
-          y: { border: { display: false }, ticks: { font: { size: 10.5 }, maxTicksLimit: 6, callback: v => Math.abs(v) >= 1000 ? (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + 'k' : v } }
+          y: { border: { display: false }, ticks: { font: { size: 10.5 }, maxTicksLimit: 6, callback: v => { const a = Math.abs(v), f = x => x.toLocaleString('pt-BR', { maximumFractionDigits: 1 }); return a >= 1e9 ? f(v / 1e9) + ' bi' : a >= 1e6 ? f(v / 1e6) + ' mi' : a >= 1e3 ? f(v / 1e3) + ' mil' : v; } } }
         }
       }
     });
@@ -4303,7 +4495,8 @@ class Component extends DCLogic {
     const shownIn = cashView ? cashIn : income;
     const shownOut = cashView ? cashOut : expense;
     const totalIE = income + expense;
-    const totalBalance = s.accounts.reduce((a, acc) => a + this.accountBalanceBRL(acc.id), 0);
+    const totalBalance = s.accounts.reduce((a, acc) => a + (acc.excludeFromTotal ? 0 : this.accountBalanceBRL(acc.id)), 0);
+    const excludedAccs = s.accounts.filter(a => a.excludeFromTotal);
 
     const openInv = s.cards.reduce((a, c) => a + Math.max(0, this.invoiceRemaining(c.id, s.refMonth, true)), 0);
 
@@ -4395,7 +4588,28 @@ class Component extends DCLogic {
     })();
     const recent = (s.showAllTx ? listTx : listTx.slice(0, 8)).map(txView);
     const searchRes = s.modal === 'search' ? this.searchTx(f.q) : null;
-    const backupDays = s.lastBackup ? Math.max(0, Math.floor((Date.now() - new Date(s.lastBackup).getTime()) / 86400000)) : null;
+    // extrato (só é calculado com a janela aberta)
+    let st = null;
+    const stRange = s.modal === 'statement' ? this.statementRange(f) : null;
+    if (stRange) {
+      const acc = this.account(f.accountId), cur = (acc && acc.currency) || 'BRL';
+      const all = this.accountStatement(f.accountId);
+      const inRg = all.filter(e => e.date >= stRange.from && e.date <= stRange.to);
+      const before = all.filter(e => e.date < stRange.from);
+      const opening = before.length ? before[before.length - 1].bal : 0;
+      const LIM = 300;
+      st = {
+        cur: cur, opening: opening, closing: inRg.length ? inRg[inRg.length - 1].bal : opening, count: inRg.length,
+        inSum: inRg.reduce((a, e) => a + (e.amt > 0 ? e.amt : 0), 0), outSum: inRg.reduce((a, e) => a + (e.amt < 0 ? -e.amt : 0), 0),
+        rows: inRg.slice(-LIM).reverse().map(e => ({
+          dateFmt: this.dateBR(e.date), desc: e.desc, meta: e.meta,
+          amountFmt: (this.r2(e.amt) < 0 ? '- ' : '+ ') + this.fmtC(Math.abs(e.amt), cur), amountClass: this.r2(e.amt) < 0 ? 'text-rose-600' : 'text-emerald-600',
+          balanceFmt: this.fmtC(e.bal, cur)
+        }))
+      };
+    }
+    const backupDay = s.lastBackup ? this.localDate(s.lastBackup) : '';
+    const backupDays = backupDay ? Math.max(0, this.dayDiff(backupDay, this.todayStr())) : null;
     // sugestões de descrição a partir do histórico do mesmo tipo
     const descSeen = {}, descList = [];
     s.transactions.slice().sort((a, b) => (a.date < b.date ? 1 : -1)).forEach(t => {
@@ -4449,7 +4663,7 @@ class Component extends DCLogic {
       '#7c2d12', '#b91c1c', '#dc2626', '#be123c', '#9d174d', '#701a75'
     ];
 
-    const pctMode = s.budgetMode === 'pct';
+    const pctMode = false; // modo "% da base" removido: limites são sempre digitados em R$
     const planCash = s.planView === 'cash';
     // caixa: compra no cartão conta no mês da fatura (cada parcela no seu mês); em conta, pela data
     const planTx = planCash ? this.cashExpenseTx(s.refMonth) : monthTx;
@@ -4467,6 +4681,7 @@ class Component extends DCLogic {
       return {
         id: c.id, name: c.name, icon: c.icon, color: c.color, tint: this.tint(c.color), limit: limit,
         budgetText: pctMode ? (bf.pct != null ? bf.pct : share).toFixed(1).replace('.', ',') + '%' : this.fmt(limit),
+        inputW: 'calc(' + Math.max(9, this.fmt(limit).length) + 'ch + 30px)',
         pct: pct.toFixed(0) + '%',
         pctLabel: limit > 0 ? Math.max(0, Math.round((spent / limit) * 100)) + '%' : '—',
         barColor: over ? '#e11d48' : pct > 80 ? '#ea580c' : '#4a45e0',
@@ -4569,6 +4784,8 @@ class Component extends DCLogic {
       invoiceCats: sel ? this.invoiceCatSummary(s.transactions.filter(t => t.pay === 'card' && t.cardId === sel.id && t.invoiceMonth === s.refMonth && this.isPostedTx(t))) : [],
 
       totalBalance: this.money(totalBalance),
+      hasExcludedAccs: excludedAccs.length > 0,
+      excludedNote: excludedAccs.length ? 'Fora do saldo: ' + excludedAccs.map(a => this.accName(a)).join(', ') : '',
       openInvoices: this.money(openInv),
       openInvoicesAll: this.money(openInv),
       monthIncome: this.money(shownIn), monthExpense: this.money(shownOut),
@@ -4638,7 +4855,11 @@ class Component extends DCLogic {
         const bal = this.accountBalance(a.id);
         const cur = a.currency || 'BRL';
         return {
-          name: this.accName(a), icon: a.icon, color: a.color, tint: this.tint(a.color),
+          name: this.accName(a), icon: a.icon, color: a.color, tint: this.tint(a.color), excluded: !!a.excludeFromTotal,
+          saldoTag: a.excludeFromTotal ? 'Fora do saldo' : 'Incluso no saldo',
+          saldoTagIcon: a.excludeFromTotal ? 'fa-eye-slash' : 'fa-circle-check',
+          saldoTagClass: a.excludeFromTotal ? 'bg-amber-50 text-amber-800 ring-1 ring-amber-200' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+          statement: () => this.setState({ modal: 'statement', form: { accountId: a.id, period: '30' } }),
           balanceFmt: this.moneyC(bal, cur), balanceClass: bal < 0 ? 'text-rose-600' : 'text-ink',
           initialFmt: this.moneyC(a.initial, cur) + (a.initialDate ? ' em ' + this.dateFull(a.initialDate) : ''),
           isForeign: cur !== 'BRL',
@@ -4664,6 +4885,7 @@ class Component extends DCLogic {
           trackBg: ink.trackBg, barBg: ink.barBg,
           invoiceMonthLabel: this.monthName(s.refMonth, false),
           invoiceTotalFmt: this.moneyS(total),
+          valueSize: (n => n > 17 ? 'text-[19px]' : n > 14 ? 'text-[22px]' : 'text-[26px]')(this.moneyS(total).length),
           invoiceStatus: c.inactive ? 'Desativado' : total < -0.004 ? 'Crédito na fatura' : paid ? 'Quitada' : paidSum > 0 ? 'Parcial · restam ' + this.money(rest) : total > 0 ? 'Aberta · vence dia ' + c.dueDay : 'Sem lançamentos',
           usedFmt: this.money(used), limitFmt: this.money(c.limit),
           usedPct: (c.limit > 0 ? Math.min(100, (used / c.limit) * 100) : 0).toFixed(0) + '%',
@@ -4708,6 +4930,9 @@ class Component extends DCLogic {
       budgetTotalFmt: this.money(budgetTotal), budgetSpentFmt: this.moneyS(budgetSpent),
       budgetLeftFmt: this.moneyS(budgetTotal - budgetSpent),
       budgetLeftClass: budgetTotal - budgetSpent < 0 ? 'text-rose-600' : 'text-brand-600',
+      budgetUsedPct: (budgetTotal > 0 ? Math.min(100, Math.max(0, budgetSpent / budgetTotal * 100)) : 0).toFixed(0) + '%',
+      budgetUsedLabel: budgetTotal > 0 ? Math.round(budgetSpent / budgetTotal * 100) + '%' : '—',
+      budgetUsedColor: budgetTotal > 0 && budgetSpent > budgetTotal ? '#e11d48' : budgetTotal > 0 && budgetSpent / budgetTotal > 0.8 ? '#ea580c' : '#4a45e0',
       budgetOutsideNote: budgetTotal === 0
         ? 'Defina um limite nas categorias abaixo para acompanhar o consumo do mês.'
         : (outsideBudget > 0 ? 'Gasto e disponível consideram só as categorias com limite. Fora do orçamento: ' + this.money(outsideBudget) + '.' : ''),
@@ -4793,8 +5018,23 @@ class Component extends DCLogic {
         const r = fc === 'BRL' ? f.amount / f.toAmount : tc === 'BRL' ? f.toAmount / f.amount : f.toAmount / f.amount;
         return fc === 'BRL' || tc === 'BRL' ? 'Cotação: 1 ' + foreign + ' = ' + this.rateLabel(r) : '1 ' + fc + ' = ' + r.toLocaleString('pt-BR', { maximumFractionDigits: 4 }) + ' ' + tc;
       })(),
-      currencyOptions: [['BRL', 'Real (R$)'], ['USD', 'Dólar americano (US$)'], ['EUR', 'Euro (€)'], ['GBP', 'Libra (£)'], ['CAD', 'Dólar canadense'], ['AUD', 'Dólar australiano'], ['CHF', 'Franco suíço'], ['JPY', 'Iene'], ['ARS', 'Peso argentino'], ['CLP', 'Peso chileno'], ['UYU', 'Peso uruguaio'], ['MXN', 'Peso mexicano']].map(c => ({ value: c[0], label: c[1] })),
-      onCurrency: e => this.setForm({ currency: e.target.value }),
+      currencyOptions: (() => {
+        const base = [['BRL', 'Real (R$)'], ['USD', 'Dólar americano (US$)'], ['EUR', 'Euro (€)'], ['GBP', 'Libra (£)'], ['CAD', 'Dólar canadense'], ['AUD', 'Dólar australiano'], ['CHF', 'Franco suíço'], ['JPY', 'Iene'], ['ARS', 'Peso argentino'], ['CLP', 'Peso chileno'], ['UYU', 'Peso uruguaio'], ['MXN', 'Peso mexicano']];
+        // moedas digitadas pelo usuário em contas existentes também entram na lista
+        s.accounts.forEach(a => { const c = a.currency || 'BRL'; if (!base.some(b => b[0] === c)) base.push([c, (this.curName(c) || c) + ' (' + c + ')']); });
+        return base.map(c => ({ value: c[0], label: c[1] })).concat([{ value: '__other', label: 'Outra moeda… (digitar a sigla)' }]);
+      })(),
+      currencySelectValue: f.curOther ? '__other' : (f.currency || 'BRL'),
+      onCurrency: e => { const v = e.target.value; this.setForm(v === '__other' ? { curOther: true, currency: '' } : { curOther: false, currency: v }); },
+      curOther: s.modal === 'account' && !!f.curOther,
+      onCurCode: e => this.setForm({ currency: (e.target.value || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) }),
+      curCodeHint: (() => {
+        const c = f.currency || '';
+        if (c.length < 3) return 'Use a sigla oficial de 3 letras (padrão ISO), a mesma que aparece no câmbio do banco. Ex.: COP (peso colombiano), PEN (sol peruano), THB (baht tailandês).';
+        const name = this.curName(c);
+        return (name ? name + ' — ' : 'Sigla não reconhecida como moeda oficial, mas pode usar. ') + 'Os valores vão aparecer assim: ' + this.fmtC(1234.56, c);
+      })(),
+      curCodeClass: (f.currency || '').length === 3 && !this.curName(f.currency) ? 'text-amber-700' : 'text-slate-500',
       onRate: e => this.setForm({ rateText: e.target.value }),
       onInitialDate: e => this.setForm({ initialDate: e.target.value }),
       clearInitialDate: () => this.setForm({ initialDate: '' }),
@@ -4824,6 +5064,23 @@ class Component extends DCLogic {
 
       modalOpen: !!s.modal, closeModal: () => this.close(),
       isSearchModal: s.modal === 'search',
+      modalWidth: s.modal === 'statement' ? 'sm:max-w-2xl' : 'sm:max-w-md',
+      isStatementModal: s.modal === 'statement',
+      stPeriods: [['15', '15 dias'], ['30', '30 dias'], ['60', '60 dias'], ['90', '90 dias'], ['month', 'Este mês'], ['custom', 'Período']].map(p => ({
+        label: p[1], pick: () => this.setForm(p[0] === 'custom' ? Object.assign({ period: 'custom' }, stRange || {}) : { period: p[0] }),
+        class: 'h-9 px-3 rounded-lg text-[12px] font-semibold ' + (f.period === p[0] ? 'bg-brand-600 text-white' : 'bg-slate-100 text-slate-600')
+      })),
+      stIsCustom: s.modal === 'statement' && f.period === 'custom',
+      stFrom: stRange ? stRange.from : '', stTo: stRange ? stRange.to : '',
+      onStFrom: e => this.setForm({ from: e.target.value }), onStTo: e => this.setForm({ to: e.target.value }),
+      stFromFmt: stRange ? this.dateBR(this.addDays(stRange.from, -1)) : '', stToFmt: stRange ? this.dateBR(stRange.to) : '',
+      stOpeningFmt: st ? this.fmtC(st.opening, st.cur) : '', stClosingFmt: st ? this.fmtC(st.closing, st.cur) : '',
+      stClosingClass: st && this.r2(st.closing) < 0 ? 'text-rose-600' : '',
+      stInFmt: st ? '+ ' + this.fmtC(st.inSum, st.cur) : '', stOutFmt: st ? '- ' + this.fmtC(st.outSum, st.cur) : '',
+      stCountLabel: st ? st.count + (st.count === 1 ? ' movimento' : ' movimentos') : '',
+      stRows: st ? st.rows : [], stHasRows: !!(st && st.rows.length), stNoRows: !!(st && !st.rows.length),
+      stNote: st ? (st.count > st.rows.length ? 'Mostrando os ' + st.rows.length + ' mais recentes de ' + st.count + '. A exportação traz todos. ' : '') + 'Só movimentos efetivados; pendentes não aparecem no extrato.' : '',
+      exportStatementCSV: () => this.exportStatementCSV(),
       openSearch: () => this.setState({ modal: 'search', form: { q: (s.modal === 'search' && f.q) || '' }, sheet: false }, () => {
         setTimeout(() => { const el = document.getElementById('fin-search'); if (el) el.focus(); }, 60);
       }),
@@ -4838,13 +5095,15 @@ class Component extends DCLogic {
       backupDueTitle: backupDays === null ? 'Você ainda não baixou um backup neste aparelho' : 'Seu último backup foi há ' + backupDays + ' dias',
       backupDueClass: backupDays === null || backupDays >= 14 ? 'border-rose-200' : 'border-amber-200',
       backupDueIconClass: backupDays === null || backupDays >= 14 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600',
-      lastBackupLabel: s.lastBackup ? this.dateFull(s.lastBackup.slice(0, 10)) + (backupDays > 0 ? ' (há ' + backupDays + (backupDays === 1 ? ' dia)' : ' dias)') : ' (hoje)') : 'nunca feito',
+      lastBackupLabel: backupDay ? this.dateFull(backupDay) + (backupDays === 0 ? ' (hoje)' : backupDays === 1 ? ' (ontem)' : ' (há ' + backupDays + ' dias)') : 'nunca feito',
+      storageLabel: 'Dados neste aparelho: ' + (this._savedChars ? Math.max(1, Math.round(this._savedChars / 1024)) + ' KB' : '—') + ' de cerca de 5 MB' + (this._saveFailed ? ' · ERRO AO SALVAR' : ''),
       lastBackupClass: backupDays === null || backupDays >= 7 ? 'text-rose-600' : 'text-emerald-600',
       isTxModal: s.modal === 'tx', isAccountModal: s.modal === 'account', isCardModal: s.modal === 'card',
       isCatModal: s.modal === 'cat', isPayModal: s.modal === 'pay', isSubModal: s.modal === 'sub', isDetailModal: s.modal === 'detail', isDayModal: s.modal === 'day',
       modalTitle: s.modal === 'day' ? (f.day ? this.dateFull(f.day) : 'Dia')
         : s.modal === 'detail' ? (detail.title || 'Detalhe')
         : s.modal === 'search' ? 'Buscar lançamentos'
+        : s.modal === 'statement' ? 'Extrato · ' + this.accName(f.accountId)
         : s.modal === 'sub' ? (f.id ? 'Editar assinatura' : 'Nova assinatura')
         : s.modal === 'tx' ? (f.id ? 'Editar lançamento' : (f.type === 'income' ? 'Nova receita' : f.type === 'transfer' ? 'Nova transferência' : 'Nova despesa'))
         : s.modal === 'account' ? (f.id ? 'Editar conta' : 'Nova conta')
@@ -4894,6 +5153,8 @@ class Component extends DCLogic {
       onAccount: e => this.setForm({ accountId: e.target.value }),
       onPayDate: e => this.setForm({ date: e.target.value }),
       onPaid: e => this.setForm({ paid: e.target.checked }),
+      onInTotal: e => this.setForm({ inTotal: e.target.checked }),
+      formInTotal: f.inTotal !== false,
       onCard: e => {
         const id = e.target.value;
         const patch = { cardId: id };
